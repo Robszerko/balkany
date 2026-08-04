@@ -83,7 +83,7 @@
       white-space: nowrap;
     }
 
-    /* Layout Rács */
+    /* Fő Layout Rács */
     .layout-grid {
       display: grid;
       grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
@@ -96,7 +96,6 @@
       .tv-header { flex-direction: column; text-align: center; gap: 6px; padding: 10px; }
       .station-title { font-size: 15px; }
       .location-tag { font-size: 10px; }
-      .time-badge { font-size: 10px; padding: 4px 8px; }
     }
 
     @media (max-width: 768px) {
@@ -136,6 +135,16 @@
       border-radius: 12px;
       padding: 14px 8px;
       text-align: center;
+    }
+
+    .condition-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #38bdf8;
     }
 
     .main-temp {
@@ -188,6 +197,7 @@
     .grid-label { font-size: 9px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .grid-value { font-size: 12px; font-weight: 700; margin-top: 2px; word-break: break-word; }
 
+    /* Statisztikai Kártyák Mobilon */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -240,6 +250,7 @@
       width: 100%;
     }
 
+    /* Táblázat Reszponzív Méretezése (Asztalin tágas, Mobilon kompakt) */
     .table-wrapper {
       max-height: 380px;
       overflow-y: auto;
@@ -252,7 +263,7 @@
 
     @media (max-width: 768px) {
       .table-wrapper {
-        max-height: 160px; /* Mobilon szuper-kompakt méret! */
+        max-height: 160px; /* Mobilon szuper-kompakt magasság! */
       }
     }
 
@@ -299,7 +310,7 @@
       <div class="time-badge" id="time-top">Mérés ideje: ...</div>
     </div>
 
-    <!-- Fő Layout Rács -->
+    <!-- Fő Rács -->
     <div class="layout-grid">
       
       <!-- BAL OSZLOP -->
@@ -373,7 +384,7 @@
 
   <script>
     // A HOSSZÚ DEPLOY / BEVEZETÉSI URL-ED:
-    const DEPLOY_URL = "https://script.google.com/macros/s/AKfycbwcOf7P7Cm51nZH44dDtYkCKohVqtbTl5pnBLkwDW4MRs3W4cMbFhlxEwywLLBkxV7Z/exec";
+    const DEPLOY_URL = "https://script.google.com/macros/s/AKfycbzLL79V-ou4rHFWye75drkP_WwpAFQhwSJyuiTSmekfk2BSvfFqXuAG1InNjrA6RHP7/exec";
 
     let chartInstance = null;
 
@@ -412,6 +423,19 @@
       return "#a855f7";                 
     }
 
+    function getWeatherCondition(curr) {
+      const rainRate = Number(curr.rainrate) || 0;
+      const solar = Number(curr.solarrad) || 0;
+      const uv = Number(curr.uvi) || 0;
+
+      if (rainRate > 5) return "🌧️⚡ Felhőszakadás / Zivatar";
+      if (rainRate > 0) return "🌧️ Esős / Csapadékos idő";
+      if (solar > 400 || uv >= 6) return "☀️ Derült, Erősen Napos idő";
+      if (solar > 120) return "⛅ Gyengén Felhős, Napos idő";
+      if (solar > 10) return "☁️ Borult, Párás idő";
+      return "🌙 Éjszakai csendes idő";
+    }
+
     async function loadWeather() {
       try {
         const cacheUrl = DEPLOY_URL + (DEPLOY_URL.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
@@ -441,6 +465,7 @@
       const mainTempColor = getTempColor(curr.temp);
       const windColor = getWindColor(curr.wind);
       const uvColor = getUvColor(curr.uvi);
+      const condText = getWeatherCondition(curr);
 
       const humVal = Number(curr.hum) || 0;
 
@@ -468,6 +493,7 @@
 
       leftPanel.innerHTML = `
         <div class="hero-studio">
+          <div class="condition-badge">${condText}</div>
           <div style="font-size:9px; font-weight:800; color:${mainTempColor}; letter-spacing:1px; margin-top:4px;">JELENLEGI HŐMÉRSÉKLET</div>
           <div class="main-temp" style="color:${mainTempColor}; text-shadow: 0 0 25px ${mainTempColor}40;">${fmt(curr.temp)} °C</div>
           
