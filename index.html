@@ -157,6 +157,70 @@
     .grid-label { font-size: 11px; color: var(--text-sub); }
     .grid-value { font-size: 14px; font-weight: 700; margin-top: 4px; }
 
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+    }
+
+    .stat-card-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .stat-card-title { font-size: 11px; color: var(--text-sub); text-transform: uppercase; font-weight: 600; }
+    .stat-card-val { font-size: 15px; font-weight: 800; margin-top: 2px; }
+
+    /* Csapadék Napló Stílusok */
+    .rain-summary-badge {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #38bdf8;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 14px;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    .rain-event-box {
+      background: rgba(255, 255, 255, 0.02);
+      border-left: 4px solid #38bdf8;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+    }
+
+    .rain-event-header {
+      font-weight: 700;
+      color: #f8fafc;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .rain-segment {
+      font-size: 13px;
+      color: var(--text-sub);
+      padding: 4px 0;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+    }
+
+    .rain-event-end {
+      font-weight: 700;
+      color: #34d399;
+      font-size: 13px;
+      margin-top: 8px;
+      padding-top: 4px;
+    }
+
     .chart-container {
       position: relative;
       height: 340px;
@@ -229,11 +293,28 @@
 
       <!-- JOBB OSZLOP -->
       <div>
+        
+        <!-- Csapadék Napló Kártya -->
+        <div class="card">
+          <div class="card-title">🌧️ MAI CSAPADÉK-ESEMÉNY NAPLÓ (00:00 - 23:59)</div>
+          <div id="rain-panel">
+            <div class="loading">Csapadék adatok elemzése...</div>
+          </div>
+        </div>
+
+        <!-- Klíma Statisztikák -->
+        <div class="card">
+          <div class="card-title">📊 METEOROLÓGIAI KLÍMAMUTATÓK ÉS REKORDOK</div>
+          <div id="stats-panel">
+            <div class="loading">Statisztikák számítása...</div>
+          </div>
+        </div>
+
         <!-- Grafikon -->
         <div class="card chart-card">
           <div class="card-title">
-            <span>📊 MAI HŐMÉRSÉKLET ÉS SZÉL GRAFIKON</span>
-            <span style="font-size: 11px; color: #34d399;">● Automata frissítés: 10 percenként</span>
+            <span>📈 MAI HŐMÉRSÉKLET ÉS SZÉL GRAFIKON</span>
+            <span style="font-size: 11px; color: #34d399;">● Automata frissítés: 15 percenként</span>
           </div>
           <div class="chart-container">
             <canvas id="weatherChart"></canvas>
@@ -271,7 +352,7 @@
 
   <script>
     // A HOSSZÚ DEPLOY / BEVEZETÉSI URL-ED:
-    const DEPLOY_URL = "https://script.google.com/macros/s/AKfycbzwHOUuKE1aWagndOsUAPa-wmxo8Joj31HPfbyaVBT3AnBsrbVzkeDeAuxzSpwQYv-u/exec";
+    const DEPLOY_URL = "https://script.google.com/macros/s/AKfycbwfgE9BTWybfX51Fl8CLkuWEOH0Qws9ec7buE1wbGJVe2Us3ipuLmfF2We5mD6IQVKI/exec";
 
     let chartInstance = null;
 
@@ -317,6 +398,8 @@
 
         if (data && data.current) {
           renderCurrentCard(data.current);
+          renderRainLog(data.rainLog);
+          renderStats(data.stats);
           renderChart(data.history || []);
           renderTable(data.history || []);
         }
@@ -374,6 +457,102 @@
 
         <div class="grid-small">
           ${gridHtml}
+        </div>
+      `;
+    }
+
+    // Csapadék-Esemény Napló Renderelése
+    function renderRainLog(rainLog) {
+      const panel = document.getElementById('rain-panel');
+      if (!rainLog) {
+        panel.innerHTML = '<div style="color:var(--text-sub);">Még nincs csapadék adat.</div>';
+        return;
+      }
+
+      let html = `<div class="rain-summary-badge">🌧️ Mai Összes Csapadék (00:00-tól): ${rainLog.todayTotalRain} mm</div>`;
+
+      if (!rainLog.events || rainLog.events.length === 0) {
+        html += `<div style="color:var(--text-sub); font-size:13px; margin-top:6px;">☀️ Ma még nem esett csapadék Balkányban.</div>`;
+      } else {
+        rainLog.events.forEach(ev => {
+          html += `<div class="rain-event-box">`;
+          html += `<div class="rain-event-header">💧 Csapadék-esemény (${ev.startTime} - ${ev.endTime}) • Összesen: ${ev.totalMm} mm</div>`;
+          
+          ev.segments.forEach(seg => {
+            html += `
+              <div class="rain-segment">
+                <span>${seg.timeRange} - ${seg.category}</span>
+                <span style="color:#38bdf8; font-weight:bold;">${seg.mm} mm</span>
+              </div>
+            `;
+          });
+
+          html += `<div class="rain-event-end">${ev.summary}</div>`;
+          html += `</div>`;
+        });
+      }
+
+      panel.innerHTML = html;
+    }
+
+    function renderStats(stats) {
+      const panel = document.getElementById('stats-panel');
+      if (!stats) return;
+
+      panel.innerHTML = `
+        <div class="stats-grid">
+          <div class="stat-card-box">
+            <div class="stat-card-title">🔴 Mai Max. Hőmérséklet (Tmax)</div>
+            <div class="stat-card-val" style="color:#ef4444;">${stats.today.maxTemp}</div>
+          </div>
+          <div class="stat-card-box">
+            <div class="stat-card-title">🔵 Mai Min. Hőmérséklet (Tmin)</div>
+            <div class="stat-card-val" style="color:#38bdf8;">${stats.today.minTemp}</div>
+          </div>
+          <div class="stat-card-box">
+            <div class="stat-card-title">↕️ Mai Napi Hőingás</div>
+            <div class="stat-card-val" style="color:#facc15;">${stats.today.rangeTemp}</div>
+          </div>
+          <div class="stat-card-box">
+            <div class="stat-card-title">🌡️ Mai Átlaghőmérséklet</div>
+            <div class="stat-card-val" style="color:#34d399;">${stats.today.meanTemp}</div>
+          </div>
+          <div class="stat-card-box">
+            <div class="stat-card-title">⚡ Légnyomás (3h Tendencia)</div>
+            <div class="stat-card-val" style="color:#a855f7;">${stats.trend3h.diff} (${stats.trend3h.text})</div>
+          </div>
+          <div class="stat-card-box">
+            <div class="stat-card-title">☀️ Napsütéses Idő Ma</div>
+            <div class="stat-card-val" style="color:#facc15;">${stats.today.sunHours}</div>
+          </div>
+          <div class="stat-card-box">
+            <div class="stat-card-title">🌫️ Köd / Harmat Kockázat</div>
+            <div class="stat-card-val" style="color:#38bdf8;">${stats.today.fogRisk}</div>
+          </div>
+          <div class="stat-card-box">
+            <div class="stat-card-title">🏠 Klímázási / Fűtési Igény</div>
+            <div class="stat-card-val" style="color:#f97316;">${stats.today.cddHdd}</div>
+          </div>
+          <div class="stat-card-box">
+            <div class="stat-card-title">🌵 Aszály-Számláló</div>
+            <div class="stat-card-val" style="color:#38bdf8;">${stats.allTime.dryDays}</div>
+          </div>
+          <div class="stat-card-box">
+            <div class="stat-card-title">🧭 Mai Uralkodó Szélirány</div>
+            <div class="stat-card-val" style="color:#38bdf8;">${stats.today.dominantWind}</div>
+          </div>
+          <div class="stat-card-box">
+            <div class="stat-card-title">🌧️ Utolsó Csapadék Ideje</div>
+            <div class="stat-card-val" style="color:#38bdf8;">${stats.allTime.lastRain}</div>
+          </div>
+          <div class="stat-card-box">
+            <div class="stat-card-title">☀️ Abszolút Rekord Meleg</div>
+            <div class="stat-card-val" style="color:#f97316;">${stats.allTime.maxTemp}</div>
+          </div>
+          <div class="stat-card-box">
+            <div class="stat-card-title">❄️ Abszolút Rekord Hideg</div>
+            <div class="stat-card-val" style="color:#38bdf8;">${stats.allTime.minTemp}</div>
+          </div>
         </div>
       `;
     }
@@ -489,8 +668,15 @@
 
     window.onload = function() {
       loadWeather();
-      setInterval(loadWeather, 600000);
+      setInterval(loadWeather, 900000);
     };
+
+    document.addEventListener("visibilitychange", function() {
+      if (!document.hidden) {
+        loadWeather();
+      }
+    });
+    window.addEventListener("focus", loadWeather);
   </script>
 </body>
 </html>
