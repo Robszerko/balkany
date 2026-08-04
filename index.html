@@ -16,6 +16,12 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
+    html, body {
+      overflow-x: hidden;
+      max-width: 100vw;
+      width: 100%;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background-color: var(--bg-dark);
@@ -25,13 +31,14 @@
     }
 
     @media (max-width: 600px) {
-      body { padding: 8px; }
+      body { padding: 6px; }
     }
 
     .dashboard {
       max-width: 1400px;
       margin: 0 auto;
       width: 100%;
+      overflow-x: hidden;
     }
 
     /* Fejléc */
@@ -79,12 +86,15 @@
       display: grid;
       grid-template-columns: 380px 1fr;
       gap: 20px;
+      width: 100%;
     }
 
     @media (max-width: 992px) {
-      .layout-grid { grid-template-columns: 1fr; }
-      .tv-header { flex-direction: column; text-align: center; gap: 10px; }
-      .station-title { font-size: 18px; }
+      .layout-grid { grid-template-columns: 1fr; width: 100%; }
+      .tv-header { flex-direction: column; text-align: center; gap: 10px; padding: 12px; }
+      .station-title { font-size: 16px; }
+      .location-tag { font-size: 11px; }
+      .time-badge { font-size: 11px; padding: 6px 10px; }
     }
 
     @media (max-width: 768px) {
@@ -98,6 +108,12 @@
       padding: 20px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
       margin-bottom: 20px;
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 12px; border-radius: 14px; margin-bottom: 12px; }
     }
 
     .card-title {
@@ -121,12 +137,20 @@
       margin-bottom: 20px;
     }
 
+    @media (max-width: 600px) {
+      .hero-studio { padding: 16px 10px; }
+    }
+
     .main-temp {
       font-size: 58px;
       font-weight: 900;
       line-height: 1;
       margin: 10px 0;
       transition: color 0.3s;
+    }
+
+    @media (max-width: 600px) {
+      .main-temp { font-size: 42px; }
     }
 
     .hero-stats {
@@ -143,8 +167,12 @@
 
     .grid-small {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .grid-small { gap: 6px; }
     }
 
     .grid-item {
@@ -152,60 +180,64 @@
       border: 1px solid var(--card-border);
       padding: 10px 12px;
       border-radius: 12px;
+      overflow: hidden;
     }
 
-    .grid-label { font-size: 11px; color: var(--text-sub); }
-    .grid-value { font-size: 14px; font-weight: 700; margin-top: 4px; }
+    .grid-label { font-size: 11px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .grid-value { font-size: 14px; font-weight: 700; margin-top: 4px; word-break: break-word; }
 
+    /* Statisztikai Kártyák Mobilon */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+      gap: 10px;
     }
 
     .stat-card-box {
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--card-border);
-      border-radius: 14px;
-      padding: 14px;
+      border-radius: 12px;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       gap: 4px;
+      overflow: hidden;
     }
 
-    .stat-card-title { font-size: 11px; color: var(--text-sub); text-transform: uppercase; font-weight: 600; }
-    .stat-card-val { font-size: 15px; font-weight: 800; margin-top: 2px; }
+    .stat-card-title { font-size: 10px; color: var(--text-sub); text-transform: uppercase; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stat-card-val { font-size: 13px; font-weight: 800; margin-top: 2px; word-break: break-word; }
 
-    /* Csapadék Napló Stílusok */
     .rain-summary-badge {
       background: rgba(56, 189, 248, 0.15);
       border: 1px solid rgba(56, 189, 248, 0.3);
       color: #38bdf8;
-      padding: 8px 16px;
+      padding: 8px 14px;
       border-radius: 12px;
       font-weight: 700;
-      font-size: 14px;
+      font-size: 13px;
       display: inline-block;
       margin-bottom: 12px;
+      max-width: 100%;
+      word-break: break-word;
     }
 
     .rain-event-box {
       background: rgba(255, 255, 255, 0.02);
       border-left: 4px solid #38bdf8;
       border-radius: 8px;
-      padding: 12px 16px;
-      margin-bottom: 12px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
     }
 
     .rain-event-header {
       font-weight: 700;
       color: #f8fafc;
-      font-size: 14px;
-      margin-bottom: 8px;
+      font-size: 13px;
+      margin-bottom: 6px;
     }
 
     .rain-segment {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-sub);
       padding: 4px 0;
       display: flex;
@@ -216,8 +248,8 @@
     .rain-event-end {
       font-weight: 700;
       color: #34d399;
-      font-size: 13px;
-      margin-top: 8px;
+      font-size: 12px;
+      margin-top: 6px;
       padding-top: 4px;
     }
 
@@ -227,43 +259,45 @@
       width: 100%;
     }
 
+    /* Táblázat Mobil Görgetés */
     .table-wrapper {
       max-height: 320px;
       overflow-y: auto;
       overflow-x: auto;
       border-radius: 12px;
       border: 1px solid var(--card-border);
+      width: 100%;
       -webkit-overflow-scrolling: touch;
     }
 
     table {
       width: 100%;
-      min-width: 500px;
+      min-width: 420px;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 12px;
       text-align: left;
     }
 
     th {
       background: #0f172a;
       color: var(--text-sub);
-      padding: 12px;
+      padding: 10px 8px;
       position: sticky;
       top: 0;
       font-weight: 700;
       text-transform: uppercase;
-      font-size: 11px;
+      font-size: 10px;
     }
 
     td {
-      padding: 10px 12px;
+      padding: 8px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       color: var(--text-bright);
     }
 
     tr:hover { background: rgba(255, 255, 255, 0.05); }
 
-    .loading { text-align: center; padding: 40px; color: #38bdf8; font-weight: 700; }
+    .loading { text-align: center; padding: 30px; color: #38bdf8; font-weight: 700; }
   </style>
 </head>
 <body>
@@ -304,17 +338,17 @@
 
         <!-- Klíma Statisztikák -->
         <div class="card">
-          <div class="card-title">📊 METEOROLÓGIAI KLÍMAMUTATÓK ÉS REKORDOK</div>
+          <div class="card-title">📊 PROFI METEOROLÓGIAI KLÍMAMUTATÓK ÉS REKORDOK</div>
           <div id="stats-panel">
             <div class="loading">Statisztikák számítása...</div>
           </div>
         </div>
 
-        <!-- Grafikon -->
+        <!-- Grafikon (Mobilon Rejtve) -->
         <div class="card chart-card">
           <div class="card-title">
             <span>📈 MAI HŐMÉRSÉKLET ÉS SZÉL GRAFIKON</span>
-            <span style="font-size: 11px; color: #34d399;">● Automata frissítés: 15 percenként</span>
+            <span style="font-size: 11px; color: #34d399;">● Automata frissítés: 10 percenként</span>
           </div>
           <div class="chart-container">
             <canvas id="weatherChart"></canvas>
@@ -352,7 +386,7 @@
 
   <script>
     // A HOSSZÚ DEPLOY / BEVEZETÉSI URL-ED:
-    const DEPLOY_URL = "https://script.google.com/macros/s/AKfycbwfgE9BTWybfX51Fl8CLkuWEOH0Qws9ec7buE1wbGJVe2Us3ipuLmfF2We5mD6IQVKI/exec";
+    const DEPLOY_URL = "https://script.google.com/macros/s/AKfycbwK6qsHyMFewPIC2sV51QBasUUBW1o8CnIPqm-H2LMV08EJAkj9kE4xHDEpJXkmQsoS/exec";
 
     let chartInstance = null;
 
@@ -393,15 +427,20 @@
 
     async function loadWeather() {
       try {
-        const response = await fetch(DEPLOY_URL);
+        const cacheUrl = DEPLOY_URL + (DEPLOY_URL.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+        const response = await fetch(cacheUrl, { cache: "no-store" });
         const data = await response.json();
 
         if (data && data.current) {
           renderCurrentCard(data.current);
           renderRainLog(data.rainLog);
           renderStats(data.stats);
-          renderChart(data.history || []);
           renderTable(data.history || []);
+
+          const currentMin = new Date().getMinutes();
+          if (currentMin % 20 === 0 || !chartInstance) {
+            renderChart(data.history || []);
+          }
         }
       } catch (err) {
         console.error("Hiba az adatok frissítésekor: ", err);
@@ -461,7 +500,6 @@
       `;
     }
 
-    // Csapadék-Esemény Napló Renderelése
     function renderRainLog(rainLog) {
       const panel = document.getElementById('rain-panel');
       if (!rainLog) {
@@ -472,7 +510,7 @@
       let html = `<div class="rain-summary-badge">🌧️ Mai Összes Csapadék (00:00-tól): ${rainLog.todayTotalRain} mm</div>`;
 
       if (!rainLog.events || rainLog.events.length === 0) {
-        html += `<div style="color:var(--text-sub); font-size:13px; margin-top:6px;">☀️ Ma még nem esett csapadék Balkányban.</div>`;
+        html += `<div style="color:var(--text-sub); font-size:13px; margin-top:6px;">☀️ Ma még nem esett csapadék Balkányon.</div>`;
       } else {
         rainLog.events.forEach(ev => {
           html += `<div class="rain-event-box">`;
@@ -666,9 +704,25 @@
       tbody.innerHTML = html;
     }
 
+    function scheduleClockSync() {
+      const now = new Date();
+      const mins = now.getMinutes();
+      const secs = now.getSeconds();
+      const ms = now.getMilliseconds();
+      
+      const nextTargetMin = Math.ceil((mins + 0.001) / 10) * 10;
+      const diffMins = nextTargetMin - mins;
+      const msToNext = (diffMins * 60 * 1000) - (secs * 1000) - ms + 2000;
+      
+      setTimeout(function() {
+        loadWeather();
+        scheduleClockSync();
+      }, msToNext);
+    }
+
     window.onload = function() {
       loadWeather();
-      setInterval(loadWeather, 900000);
+      scheduleClockSync();
     };
 
     document.addEventListener("visibilitychange", function() {
