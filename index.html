@@ -17,7 +17,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      overflow-x: hidden;
+      overflow-x: hidden !important;
       max-width: 100vw;
       width: 100%;
     }
@@ -28,6 +28,7 @@
       color: var(--text-bright);
       padding: 16px;
       min-height: 100vh;
+      will-change: transform;
     }
 
     @media (max-width: 600px) {
@@ -35,7 +36,7 @@
     }
 
     .dashboard {
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
       width: 100%;
       overflow-x: hidden;
@@ -45,17 +46,18 @@
     .tv-header {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      padding: 18px 24px;
-      border-radius: 20px;
-      margin-bottom: 20px;
+      padding: 16px 20px;
+      border-radius: 18px;
+      margin-bottom: 16px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.3);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      width: 100%;
     }
 
     .station-title {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
       letter-spacing: 0.5px;
       text-transform: uppercase;
@@ -72,11 +74,11 @@
     }
 
     .time-badge {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-sub);
       background: rgba(255,255,255,0.05);
-      padding: 8px 14px;
-      border-radius: 12px;
+      padding: 6px 12px;
+      border-radius: 10px;
       border: 1px solid var(--card-border);
       white-space: nowrap;
     }
@@ -84,17 +86,16 @@
     /* Layout Rács */
     .layout-grid {
       display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 20px;
+      grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+      gap: 16px;
       width: 100%;
     }
 
     @media (max-width: 992px) {
-      .layout-grid { grid-template-columns: 1fr; width: 100%; }
-      .tv-header { flex-direction: column; text-align: center; gap: 10px; padding: 12px; }
+      .layout-grid { grid-template-columns: minmax(0, 1fr); width: 100%; }
+      .tv-header { flex-direction: column; text-align: center; gap: 8px; padding: 12px; }
       .station-title { font-size: 16px; }
       .location-tag { font-size: 11px; }
-      .time-badge { font-size: 11px; padding: 6px 10px; }
     }
 
     @media (max-width: 768px) {
@@ -104,10 +105,10 @@
     .card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 20px;
-      padding: 20px;
+      border-radius: 18px;
+      padding: 16px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       width: 100%;
       overflow-x: hidden;
     }
@@ -117,12 +118,12 @@
     }
 
     .card-title {
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       color: var(--text-sub);
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -131,140 +132,136 @@
     .hero-studio {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(30, 41, 59, 0.9) 100%);
       border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 24px;
+      border-radius: 14px;
+      padding: 18px 12px;
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
-    @media (max-width: 600px) {
-      .hero-studio { padding: 16px 10px; }
+    .condition-badge {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #38bdf8;
+      margin-bottom: 6px;
     }
 
     .main-temp {
-      font-size: 58px;
+      font-size: 52px;
       font-weight: 900;
       line-height: 1;
-      margin: 10px 0;
-      transition: color 0.3s;
+      margin: 8px 0;
     }
 
     @media (max-width: 600px) {
-      .main-temp { font-size: 42px; }
+      .main-temp { font-size: 40px; }
     }
 
     .hero-stats {
       display: flex;
       justify-content: space-around;
-      margin-top: 16px;
-      padding-top: 16px;
+      margin-top: 12px;
+      padding-top: 12px;
       border-top: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .stat-box { display: flex; flex-direction: column; gap: 4px; }
-    .stat-label { font-size: 11px; color: var(--text-sub); text-transform: uppercase; }
-    .stat-value { font-size: 15px; font-weight: 700; }
+    .stat-box { display: flex; flex-direction: column; gap: 2px; }
+    .stat-label { font-size: 10px; color: var(--text-sub); text-transform: uppercase; }
+    .stat-value { font-size: 14px; font-weight: 700; }
+
+    /* Progress bar a vizualitásért */
+    .gauge-bar-bg {
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      margin-top: 4px;
+      overflow: hidden;
+    }
+    .gauge-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
 
     .grid-small {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    @media (max-width: 600px) {
-      .grid-small { gap: 6px; }
+      gap: 8px;
     }
 
     .grid-item {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--card-border);
-      padding: 10px 12px;
-      border-radius: 12px;
+      padding: 8px 10px;
+      border-radius: 10px;
       overflow: hidden;
     }
 
-    .grid-label { font-size: 11px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .grid-value { font-size: 14px; font-weight: 700; margin-top: 4px; word-break: break-word; }
+    .grid-label { font-size: 10px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .grid-value { font-size: 13px; font-weight: 700; margin-top: 2px; word-break: break-word; }
 
     /* Statisztikai Kártyák Mobilon */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 8px;
     }
 
     .stat-card-box {
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 10px;
+      border-radius: 10px;
+      padding: 8px 10px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
       overflow: hidden;
     }
 
-    .stat-card-title { font-size: 10px; color: var(--text-sub); text-transform: uppercase; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .stat-card-val { font-size: 13px; font-weight: 800; margin-top: 2px; word-break: break-word; }
+    .stat-card-title { font-size: 9px; color: var(--text-sub); text-transform: uppercase; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stat-card-val { font-size: 12px; font-weight: 800; word-break: break-word; }
 
     .rain-summary-badge {
       background: rgba(56, 189, 248, 0.15);
       border: 1px solid rgba(56, 189, 248, 0.3);
       color: #38bdf8;
-      padding: 8px 14px;
-      border-radius: 12px;
+      padding: 6px 12px;
+      border-radius: 10px;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 12px;
       display: inline-block;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       max-width: 100%;
       word-break: break-word;
     }
 
     .rain-event-box {
       background: rgba(255, 255, 255, 0.02);
-      border-left: 4px solid #38bdf8;
-      border-radius: 8px;
-      padding: 10px 12px;
-      margin-bottom: 10px;
+      border-left: 3px solid #38bdf8;
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 8px;
     }
 
-    .rain-event-header {
-      font-weight: 700;
-      color: #f8fafc;
-      font-size: 13px;
-      margin-bottom: 6px;
-    }
-
-    .rain-segment {
-      font-size: 12px;
-      color: var(--text-sub);
-      padding: 4px 0;
-      display: flex;
-      justify-content: space-between;
-      border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
-    }
-
-    .rain-event-end {
-      font-weight: 700;
-      color: #34d399;
-      font-size: 12px;
-      margin-top: 6px;
-      padding-top: 4px;
-    }
+    .rain-event-header { font-weight: 700; color: #f8fafc; font-size: 12px; margin-bottom: 4px; }
+    .rain-segment { font-size: 11px; color: var(--text-sub); padding: 2px 0; display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255, 255, 255, 0.05); }
+    .rain-event-end { font-weight: 700; color: #34d399; font-size: 11px; margin-top: 4px; }
 
     .chart-container {
       position: relative;
-      height: 340px;
+      height: 300px;
       width: 100%;
     }
 
-    /* Táblázat Mobil Görgetés */
     .table-wrapper {
-      max-height: 320px;
+      max-height: 280px;
       overflow-y: auto;
       overflow-x: auto;
-      border-radius: 12px;
+      border-radius: 10px;
       border: 1px solid var(--card-border);
       width: 100%;
       -webkit-overflow-scrolling: touch;
@@ -272,25 +269,25 @@
 
     table {
       width: 100%;
-      min-width: 420px;
+      min-width: 400px;
       border-collapse: collapse;
-      font-size: 12px;
+      font-size: 11px;
       text-align: left;
     }
 
     th {
       background: #0f172a;
       color: var(--text-sub);
-      padding: 10px 8px;
+      padding: 8px;
       position: sticky;
       top: 0;
       font-weight: 700;
       text-transform: uppercase;
-      font-size: 10px;
+      font-size: 9px;
     }
 
     td {
-      padding: 8px;
+      padding: 6px 8px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       color: var(--text-bright);
     }
@@ -348,7 +345,7 @@
         <div class="card chart-card">
           <div class="card-title">
             <span>📈 MAI HŐMÉRSÉKLET ÉS SZÉL GRAFIKON</span>
-            <span style="font-size: 11px; color: #34d399;">● Automata frissítés: 10 percenként</span>
+            <span style="font-size: 10px; color: #34d399;">● Automata frissítés: 10 percenként</span>
           </div>
           <div class="chart-container">
             <canvas id="weatherChart"></canvas>
@@ -386,7 +383,7 @@
 
   <script>
     // A HOSSZÚ DEPLOY / BEVEZETÉSI URL-ED:
-    const DEPLOY_URL = "https://script.google.com/macros/s/AKfycbwK6qsHyMFewPIC2sV51QBasUUBW1o8CnIPqm-H2LMV08EJAkj9kE4xHDEpJXkmQsoS/exec";
+    const DEPLOY_URL = "https://script.google.com/macros/s/AKfycbxFBPFYhZHbNfUOBHW_M8Nsp_oBGB4lhLQwiCuOT57pR1xbVoFEwGWPswhrIrWWJuzW/exec";
 
     let chartInstance = null;
 
@@ -425,6 +422,20 @@
       return "#a855f7";                 
     }
 
+    // Intelligens időjárási állapotjelző generáló
+    function getWeatherCondition(curr) {
+      const rainRate = Number(curr.rainrate) || 0;
+      const solar = Number(curr.solarrad) || 0;
+      const uv = Number(curr.uvi) || 0;
+
+      if (rainRate > 5) return "🌧️⚡ Felhőszakadás / Zivatar";
+      if (rainRate > 0) return "🌧️ Esős / Csapadékos idő";
+      if (solar > 400 || uv >= 6) return "☀️ Derült, Erősen Napos idő";
+      if (solar > 120) return "⛅ Gyengén Felhős, Napos idő";
+      if (solar > 10) return "☁️ Borult, Párás idő";
+      return "🌙 Éjszakai csendes idő";
+    }
+
     async function loadWeather() {
       try {
         const cacheUrl = DEPLOY_URL + (DEPLOY_URL.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
@@ -454,6 +465,10 @@
       const mainTempColor = getTempColor(curr.temp);
       const windColor = getWindColor(curr.wind);
       const uvColor = getUvColor(curr.uvi);
+      const condText = getWeatherCondition(curr);
+
+      const humVal = Number(curr.hum) || 0;
+      const uvVal = Number(curr.uvi) || 0;
 
       const makeCard = (label, val, unit = "", color = "#f8fafc") => {
         if (val === undefined || val === null || val === "N/A") return "";
@@ -467,7 +482,7 @@
 
       let gridHtml = "";
       gridHtml += makeCard("Harmatpont", curr.dew, "°C", getTempColor(curr.dew));
-      gridHtml += makeCard("Hőérzet", curr.chill, "°C", getTempColor(curr.chill));
+      gridHtml += makeCard("Tűpontos Hőérzet", curr.chill, "°C", getTempColor(curr.chill));
       gridHtml += makeCard("Hőindex", curr.heat, "°C", getTempColor(curr.heat));
       gridHtml += makeCard("Légnyomás", curr.bar, "hPa", "#a855f7");
       gridHtml += makeCard("Széllökés", curr.gust, "km/h", getWindColor(curr.gust));
@@ -479,17 +494,20 @@
 
       leftPanel.innerHTML = `
         <div class="hero-studio">
-          <div style="font-size:11px; font-weight:800; color:${mainTempColor}; letter-spacing:1px;">JELENLEGI HŐMÉRSÉKLET</div>
+          <div class="condition-badge">${condText}</div>
+          <div style="font-size:10px; font-weight:800; color:${mainTempColor}; letter-spacing:1px; margin-top:4px;">JELENLEGI HŐMÉRSÉKLET</div>
           <div class="main-temp" style="color:${mainTempColor}; text-shadow: 0 0 25px ${mainTempColor}40;">${fmt(curr.temp)} °C</div>
           
           <div class="hero-stats">
             <div class="stat-box">
               <div class="stat-label">Páratartalom</div>
               <div class="stat-value">${fmt(curr.hum)} %</div>
+              <div class="gauge-bar-bg"><div class="gauge-bar-fill" style="width:${Math.min(100, humVal)}%; background:#38bdf8;"></div></div>
             </div>
             <div class="stat-box">
               <div class="stat-label">Szélsebesség</div>
               <div class="stat-value" style="color:${windColor}">${fmt(curr.wind)} km/h</div>
+              <div class="gauge-bar-bg"><div class="gauge-bar-fill" style="width:${Math.min(100, (Number(curr.wind)||0)*2)}%; background:${windColor};"></div></div>
             </div>
           </div>
         </div>
@@ -510,7 +528,7 @@
       let html = `<div class="rain-summary-badge">🌧️ Mai Összes Csapadék (00:00-tól): ${rainLog.todayTotalRain} mm</div>`;
 
       if (!rainLog.events || rainLog.events.length === 0) {
-        html += `<div style="color:var(--text-sub); font-size:13px; margin-top:6px;">☀️ Ma még nem esett csapadék Balkányon.</div>`;
+        html += `<div style="color:var(--text-sub); font-size:12px; margin-top:4px;">☀️ Ma még nem esett csapadék Balkányban.</div>`;
       } else {
         rainLog.events.forEach(ev => {
           html += `<div class="rain-event-box">`;
@@ -540,35 +558,35 @@
       panel.innerHTML = `
         <div class="stats-grid">
           <div class="stat-card-box">
-            <div class="stat-card-title">🔴 Mai Max. Hőmérséklet (Tmax)</div>
+            <div class="stat-card-title">🔴 Mai Max (Tmax)</div>
             <div class="stat-card-val" style="color:#ef4444;">${stats.today.maxTemp}</div>
           </div>
           <div class="stat-card-box">
-            <div class="stat-card-title">🔵 Mai Min. Hőmérséklet (Tmin)</div>
+            <div class="stat-card-title">🔵 Mai Min (Tmin)</div>
             <div class="stat-card-val" style="color:#38bdf8;">${stats.today.minTemp}</div>
           </div>
           <div class="stat-card-box">
-            <div class="stat-card-title">↕️ Mai Napi Hőingás</div>
+            <div class="stat-card-title">↕️ Napi Hőingás</div>
             <div class="stat-card-val" style="color:#facc15;">${stats.today.rangeTemp}</div>
           </div>
           <div class="stat-card-box">
-            <div class="stat-card-title">🌡️ Mai Átlaghőmérséklet</div>
+            <div class="stat-card-title">🌡️ Mai Átlaghőm.</div>
             <div class="stat-card-val" style="color:#34d399;">${stats.today.meanTemp}</div>
           </div>
           <div class="stat-card-box">
-            <div class="stat-card-title">⚡ Légnyomás (3h Tendencia)</div>
+            <div class="stat-card-title">⚡ Légnyomás (3h)</div>
             <div class="stat-card-val" style="color:#a855f7;">${stats.trend3h.diff} (${stats.trend3h.text})</div>
           </div>
           <div class="stat-card-box">
-            <div class="stat-card-title">☀️ Napsütéses Idő Ma</div>
+            <div class="stat-card-title">☀️ Napsütés Ma</div>
             <div class="stat-card-val" style="color:#facc15;">${stats.today.sunHours}</div>
           </div>
           <div class="stat-card-box">
-            <div class="stat-card-title">🌫️ Köd / Harmat Kockázat</div>
+            <div class="stat-card-title">🌫️ Köd / Harmat</div>
             <div class="stat-card-val" style="color:#38bdf8;">${stats.today.fogRisk}</div>
           </div>
           <div class="stat-card-box">
-            <div class="stat-card-title">🏠 Klímázási / Fűtési Igény</div>
+            <div class="stat-card-title">🏠 Energia Igény</div>
             <div class="stat-card-val" style="color:#f97316;">${stats.today.cddHdd}</div>
           </div>
           <div class="stat-card-box">
@@ -576,19 +594,19 @@
             <div class="stat-card-val" style="color:#38bdf8;">${stats.allTime.dryDays}</div>
           </div>
           <div class="stat-card-box">
-            <div class="stat-card-title">🧭 Mai Uralkodó Szélirány</div>
+            <div class="stat-card-title">🧭 Uralkodó Szél</div>
             <div class="stat-card-val" style="color:#38bdf8;">${stats.today.dominantWind}</div>
           </div>
           <div class="stat-card-box">
-            <div class="stat-card-title">🌧️ Utolsó Csapadék Ideje</div>
+            <div class="stat-card-title">🌧️ Utolsó Eső</div>
             <div class="stat-card-val" style="color:#38bdf8;">${stats.allTime.lastRain}</div>
           </div>
           <div class="stat-card-box">
-            <div class="stat-card-title">☀️ Abszolút Rekord Meleg</div>
+            <div class="stat-card-title">☀️ Rekord Meleg</div>
             <div class="stat-card-val" style="color:#f97316;">${stats.allTime.maxTemp}</div>
           </div>
           <div class="stat-card-box">
-            <div class="stat-card-title">❄️ Abszolút Rekord Hideg</div>
+            <div class="stat-card-title">❄️ Rekord Hideg</div>
             <div class="stat-card-val" style="color:#38bdf8;">${stats.allTime.minTemp}</div>
           </div>
         </div>
@@ -656,7 +674,7 @@
           interaction: { mode: 'index', intersect: false },
           plugins: {
             legend: {
-              labels: { color: '#f8fafc', font: { family: 'Segoe UI', size: 12, weight: 'bold' } }
+              labels: { color: '#f8fafc', font: { family: 'Segoe UI', size: 11, weight: 'bold' } }
             },
             tooltip: {
               backgroundColor: '#0f172a',
@@ -664,7 +682,7 @@
               bodyColor: '#cbd5e1',
               borderColor: '#334155',
               borderWidth: 1,
-              padding: 10
+              padding: 8
             }
           },
           scales: {
