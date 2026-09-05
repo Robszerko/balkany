@@ -3,43 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Balkány aktuális időjárása</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <title>Balkány Meteorológiai Állomás (PWS)</title>
+  <!-- Chart.js aszinkron betöltése a gyorsabb oldalrenderelés érdekében -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
   <style>
     :root {
-      --bg-dark: #0f172a;
-      --card-bg: #1e293b;
-      --card-border: #334155;
+      --bg-dark: #090d16;
+      --card-bg: #131d2e;
+      --card-border: #1e2c45;
+      --card-hover: #263552;
       --text-bright: #f8fafc;
       --text-sub: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-green: #34d399;
+      --accent-yellow: #facc15;
+      --accent-orange: #f97316;
+      --accent-red: #ef4444;
+      --accent-purple: #c084fc;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      overflow-x: hidden !important;
+      overflow-x: hidden;
       max-width: 100vw;
       width: 100%;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background-color: var(--bg-dark);
       color: var(--text-bright);
       padding: 12px;
       min-height: 100vh;
-      will-change: transform;
+      -webkit-font-smoothing: antialiased;
     }
 
     @media (max-width: 600px) {
-      body { padding: 4px; }
+      body { padding: 6px; }
     }
 
     .dashboard {
-      max-width: 1300px;
+      max-width: 1380px;
       margin: 0 auto;
       width: 100%;
-      overflow-x: hidden;
     }
 
     /* Fejléc */
@@ -49,54 +56,107 @@
       padding: 14px 18px;
       border-radius: 16px;
       margin-bottom: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      width: 100%;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .station-title {
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 0.8px;
       text-transform: uppercase;
-      background: linear-gradient(90deg, #ffffff, #cbd5e1);
+      background: linear-gradient(90deg, #38bdf8, #f8fafc);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      background-color: var(--accent-green);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent-green);
+      animation: pulseAnim 2s infinite;
+      display: inline-block;
+    }
+
+    @keyframes pulseAnim {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(52, 211, 153, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(52, 211, 153, 0); }
     }
 
     .location-tag {
       font-size: 11px;
       color: var(--text-sub);
-      margin-top: 2px;
+      margin-top: 3px;
       font-weight: 500;
     }
 
-    .time-badge {
-      font-size: 11px;
-      color: var(--text-sub);
-      background: rgba(255,255,255,0.05);
-      padding: 6px 10px;
-      border-radius: 10px;
-      border: 1px solid var(--card-border);
-      white-space: nowrap;
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
-    /* Fő Rács Elrendezés */
+    .badge-pill {
+      font-size: 11px;
+      color: var(--text-sub);
+      background: rgba(255,255,255,0.04);
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .refresh-btn {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--accent-blue);
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .refresh-btn:hover {
+      background: rgba(56, 189, 248, 0.25);
+    }
+
+    .refresh-btn.spinning svg {
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* Fő Rács */
     .layout-grid {
       display: grid;
-      grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 390px) minmax(0, 1fr);
       gap: 12px;
       width: 100%;
     }
 
-    @media (max-width: 992px) {
-      .layout-grid { grid-template-columns: minmax(0, 1fr); width: 100%; }
-      .tv-header { flex-direction: column; text-align: center; gap: 6px; padding: 10px; }
-      .station-title { font-size: 15px; }
-      .location-tag { font-size: 10px; }
-      .time-badge { font-size: 10px; padding: 4px 8px; }
+    @media (max-width: 1024px) {
+      .layout-grid { grid-template-columns: minmax(0, 1fr); }
+      .tv-header { flex-direction: column; text-align: center; }
+      .header-actions { justify-content: center; }
     }
 
     @media (max-width: 768px) {
@@ -107,204 +167,236 @@
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 16px;
-      padding: 14px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      padding: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
       margin-bottom: 12px;
       width: 100%;
-      overflow-x: hidden;
       min-width: 0;
-    }
-
-    @media (max-width: 600px) {
-      .card { padding: 10px; border-radius: 12px; margin-bottom: 8px; }
     }
 
     .card-title {
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text-sub);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
       margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
     }
 
+    /* Főhőmérséklet Hero doboz */
     .hero-studio {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(30, 41, 59, 0.9) 100%);
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.04) 0%, rgba(19, 29, 46, 0.95) 100%);
       border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 14px 8px;
+      border-radius: 14px;
+      padding: 16px 12px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
     }
 
     .main-temp {
-      font-size: 52px;
+      font-size: 58px;
       font-weight: 900;
-      line-height: 1;
-      margin: 6px 0;
-    }
-
-    @media (min-width: 993px) {
-      .main-temp { font-size: 64px; }
-      .card { padding: 20px; border-radius: 20px; }
-      .hero-studio { padding: 20px; }
+      line-height: 1.05;
+      margin: 8px 0;
+      letter-spacing: -1px;
     }
 
     @media (max-width: 600px) {
-      .main-temp { font-size: 40px; }
+      .main-temp { font-size: 46px; }
     }
 
     .hero-stats {
       display: flex;
       justify-content: space-around;
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .stat-box { display: flex; flex-direction: column; gap: 2px; }
-    .stat-label { font-size: 9px; color: var(--text-sub); text-transform: uppercase; }
-    .stat-value { font-size: 12px; font-weight: 700; }
+    .stat-box { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+    .stat-label { font-size: 9px; color: var(--text-sub); text-transform: uppercase; font-weight: 700; }
+    .stat-value { font-size: 13px; font-weight: 800; }
 
     .gauge-bar-bg {
-      width: 100%;
-      height: 3px;
-      background: rgba(255,255,255,0.1);
+      width: 70%;
+      margin: 3px auto 0 auto;
+      height: 4px;
+      background: rgba(255,255,255,0.08);
       border-radius: 2px;
-      margin-top: 2px;
       overflow: hidden;
     }
-    .gauge-bar-fill {
-      height: 100%;
-      border-radius: 2px;
-    }
+    .gauge-bar-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
 
+    /* Rács elemek a bal oldalon */
     .grid-small {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px;
-      margin-top: 8px;
+      gap: 7px;
+      margin-top: 10px;
     }
 
     .grid-item {
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--card-border);
-      padding: 8px;
-      border-radius: 8px;
+      padding: 9px;
+      border-radius: 10px;
+      transition: border-color 0.2s ease;
+    }
+    .grid-item:hover { border-color: var(--card-hover); }
+
+    .grid-label {
+      font-size: 9px;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      font-weight: 700;
+      white-space: nowrap;
       overflow: hidden;
-      min-width: 0;
+      text-overflow: ellipsis;
+    }
+    .grid-value {
+      font-size: 13px;
+      font-weight: 800;
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
-    .grid-label { font-size: 9px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .grid-value { font-size: 12px; font-weight: 700; margin-top: 2px; word-break: break-word; }
+    .grid-subtext {
+      font-size: 9px;
+      color: var(--text-sub);
+      margin-top: 2px;
+      font-weight: 500;
+    }
 
-    /* Statisztikai Kártyák Mobilon */
+    /* Szélirány nyíl */
+    .wind-arrow {
+      display: inline-block;
+      transition: transform 0.5s ease;
+      font-size: 12px;
+    }
+
+    /* Klíma statisztikák */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 6px;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 7px;
     }
 
     .stat-card-box {
       background: rgba(255, 255, 255, 0.02);
       border: 1px solid var(--card-border);
-      border-radius: 8px;
-      padding: 8px;
+      border-radius: 10px;
+      padding: 9px;
       display: flex;
       flex-direction: column;
       gap: 2px;
-      overflow: hidden;
-      min-width: 0;
     }
 
-    .stat-card-title { font-size: 9px; color: var(--text-sub); text-transform: uppercase; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .stat-card-val { font-size: 11px; font-weight: 800; word-break: break-word; }
-
-    .rain-summary-badge {
-      background: rgba(56, 189, 248, 0.15);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      color: #38bdf8;
-      padding: 6px 10px;
-      border-radius: 8px;
+    .stat-card-title {
+      font-size: 9px;
+      color: var(--text-sub);
+      text-transform: uppercase;
       font-weight: 700;
-      font-size: 11px;
-      display: inline-block;
-      margin-bottom: 6px;
-      width: 100%;
-      word-break: break-word;
+    }
+    .stat-card-val {
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    /* Csapadék napló */
+    .rain-summary-badge {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--accent-blue);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
     }
 
     .rain-event-box {
       background: rgba(255, 255, 255, 0.02);
-      border-left: 3px solid #38bdf8;
-      border-radius: 6px;
-      padding: 8px;
+      border-left: 3px solid var(--accent-blue);
+      border-radius: 8px;
+      padding: 9px;
       margin-bottom: 6px;
-      word-break: break-word;
     }
 
-    .rain-event-header { font-weight: 700; color: #f8fafc; font-size: 11px; margin-bottom: 4px; }
-    .rain-segment { font-size: 10px; color: var(--text-sub); padding: 2px 0; display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255, 255, 255, 0.05); gap: 4px; }
-    .rain-event-end { font-weight: 700; color: #34d399; font-size: 10px; margin-top: 4px; }
+    .rain-event-header { font-weight: 800; color: #f8fafc; font-size: 11px; margin-bottom: 5px; }
+    .rain-segment {
+      font-size: 10px;
+      color: var(--text-sub);
+      padding: 3px 0;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+    }
+    .rain-event-end { font-weight: 800; color: var(--accent-green); font-size: 10px; margin-top: 5px; }
 
+    /* Grafikon */
     .chart-container {
       position: relative;
-      height: 340px;
+      height: 330px;
       width: 100%;
     }
 
-    /* Asztalin Tágas Táblázat, Mobilon Kompakt Óránkénti Kártyalista */
+    /* Táblázat */
     .table-wrapper {
-      max-height: 380px;
+      max-height: 350px;
       overflow-y: auto;
-      overflow-x: auto;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid var(--card-border);
       width: 100%;
       -webkit-overflow-scrolling: touch;
     }
 
     @media (max-width: 768px) {
-      .table-wrapper {
-        max-height: 160px; /* Mobilon szuper-kompakt méret! */
-      }
+      .table-wrapper { max-height: 180px; }
     }
 
     table {
       width: 100%;
-      min-width: 380px;
+      min-width: 480px;
       border-collapse: collapse;
       font-size: 11px;
       text-align: left;
     }
 
     th {
-      background: #0f172a;
+      background: #090d16;
       color: var(--text-sub);
-      padding: 8px 6px;
+      padding: 8px 10px;
       position: sticky;
       top: 0;
-      font-weight: 700;
+      font-weight: 800;
       text-transform: uppercase;
       font-size: 9px;
+      border-bottom: 1px solid var(--card-border);
     }
 
     td {
-      padding: 6px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 7px 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
       color: var(--text-bright);
     }
 
-    tr:hover { background: rgba(255, 255, 255, 0.05); }
+    tr:hover { background: rgba(255, 255, 255, 0.04); }
 
-    /* Mobilos Óránkénti Kártyalista (Timeline Stream) */
+    /* Mobil Idővonal Kártyák */
     .mobile-log-list {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      max-height: 220px;
+      max-height: 240px;
       overflow-y: auto;
     }
 
@@ -322,7 +414,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 12px;
     }
 
@@ -334,7 +426,12 @@
       flex-wrap: wrap;
     }
 
-    .loading { text-align: center; padding: 20px; color: #38bdf8; font-weight: 700; font-size: 12px; }
+    .cache-status {
+      font-size: 9px;
+      color: var(--accent-yellow);
+      display: inline-block;
+      margin-left: 4px;
+    }
   </style>
 </head>
 <body>
@@ -344,21 +441,38 @@
     <!-- Fejléc -->
     <div class="tv-header">
       <div>
-        <div class="station-title">BALKÁNY AKTUÁLIS IDŐJÁRÁSA</div>
-        <div class="location-tag">📍 Balkány (Szabolcs-Szatmár-Bereg) • 47.77° É, 21.86° K (~142 m)</div>
+        <div class="station-title">
+          <span class="pulse-dot"></span>
+          BALKÁNY METEOROLÓGIAI ÁLLOMÁS (PWS)
+        </div>
+        <div class="location-tag">📍 Balkány, Szabolcs-Szatmár-Bereg • 47.77° É, 21.86° K • Tszf: 142 m</div>
       </div>
-      <div class="time-badge" id="time-top">Mérés ideje: ...</div>
+      <div class="header-actions">
+        <div class="badge-pill" id="sun-badge">☀️ Nap: --:-- • --:--</div>
+        <div class="badge-pill" id="time-top">⏱️ Betöltés...</div>
+        <button class="refresh-btn" id="refresh-btn" onclick="forceRefresh()" title="Azonnali frissítés">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+          Frissítés
+        </button>
+      </div>
     </div>
 
-    <!-- Fő Layout Rács -->
+    <!-- Fő Grid Elrendezés -->
     <div class="layout-grid">
       
-      <!-- BAL OSZLOP -->
+      <!-- BAL OSZLOP (Pillanatnyi Mérések) -->
       <div>
         <div class="card">
-          <div class="card-title">📡 BALKÁNY PWS ÁLLOMÁS</div>
+          <div class="card-title">
+            <span>📡 ÉLŐ ÁLLOMÁSMÉRÉSEK</span>
+            <span id="live-indicator" style="color:var(--accent-green); font-size:10px;">ONLINE</span>
+          </div>
           <div id="left-panel">
-            <div class="loading">Adatok betöltése...</div>
+            <div style="text-align:center; padding:30px; color:var(--text-sub);">Gyorsítótár beolvasása...</div>
           </div>
         </div>
       </div>
@@ -366,36 +480,39 @@
       <!-- JOBB OSZLOP -->
       <div>
         
-        <!-- Csapadék Napló Kártya -->
+        <!-- Csapadék Napló -->
         <div class="card">
           <div class="card-title">🌧️ MAI CSAPADÉK-ESEMÉNY NAPLÓ (00:00 - 23:59)</div>
           <div id="rain-panel">
-            <div class="loading">Csapadék adatok elemzése...</div>
+            <div style="color:var(--text-sub); font-size:11px;">Csapadékadatok elemzése...</div>
           </div>
         </div>
 
-        <!-- Klíma Statisztikák -->
+        <!-- Klíma Statisztikák és Rekordok -->
         <div class="card">
           <div class="card-title">📊 PROFI METEOROLÓGIAI KLÍMAMUTATÓK ÉS REKORDOK</div>
           <div id="stats-panel">
-            <div class="loading">Statisztikák számítása...</div>
+            <div style="color:var(--text-sub); font-size:11px;">Klímaadatok számítása...</div>
           </div>
         </div>
 
-        <!-- Grafikon (Mobilon Rejtve) -->
+        <!-- Grafikon (Mobilon elrejtve a gyorsaságért) -->
         <div class="card chart-card">
           <div class="card-title">
-            <span>📈 MAI HŐMÉRSÉKLET ÉS SZÉL GRAFIKON</span>
-            <span style="font-size: 10px; color: #34d399;">● Automata frissítés: 10 percenként</span>
+            <span>📈 MAI HŐMÉRSÉKLET ÉS SZÉL DINAMIKA</span>
+            <span style="font-size:10px; color:var(--accent-green);">● Automata frissítés: 10 percenként</span>
           </div>
           <div class="chart-container">
             <canvas id="weatherChart"></canvas>
           </div>
         </div>
 
-        <!-- Táblázat / Mobil Kártyalista -->
+        <!-- Mai Mérések Naplója -->
         <div class="card">
-          <div class="card-title">📜 MAI MÉRÉSEK NAPLÓJA (00:00 - 23:59)</div>
+          <div class="card-title">
+            <span>📜 MAI MÉRÉSEK IDŐVONALA</span>
+            <span id="log-count" style="font-size:10px; color:var(--text-sub);"></span>
+          </div>
           <div id="log-view-container">
             <div class="table-wrapper">
               <table>
@@ -411,7 +528,7 @@
                   </tr>
                 </thead>
                 <tbody id="table-body">
-                  <tr><td colspan="7" style="text-align:center;">Adatok betöltése...</td></tr>
+                  <tr><td colspan="7" style="text-align:center;">Adatok feldolgozása...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -425,115 +542,293 @@
   </div>
 
   <script>
-    // A HOSSZÚ DEPLOY / BEVEZETÉSI URL-ED:
     const DEPLOY_URL = "https://script.google.com/macros/s/AKfycbznCeSTMobQm8waFJJzKWH6bsjmY3Z-h0dga3RcbKS1ptd7Z0d58rq4L-zlbsYR4F7G/exec";
+    const CACHE_KEY = "balkany_weather_cache_v2";
 
     let chartInstance = null;
+    let lastDataTime = null;
+    let isFetching = false;
 
-    function fmt(val) {
-      if (val === undefined || val === null || val === "N/A") return "N/A";
-      const num = Number(val);
-      return isNaN(num) ? val : num.toFixed(1);
+    // --- SEGÉDFÜGGVÉNYEK & METEOROLÓGIAI KALKULÁCIÓK ---
+
+    function isValid(val) {
+      return val !== undefined && val !== null && val !== "" && val !== "N/A" && !isNaN(Number(val));
+    }
+
+    function fmt(val, dec = 1) {
+      if (!isValid(val)) return "N/A";
+      return Number(val).toFixed(dec);
     }
 
     function getTempColor(val) {
-      if (val === "N/A" || val === undefined) return "#f8fafc";
+      if (!isValid(val)) return "#f8fafc";
       const t = Number(val);
-      if (t < 0) return "#38bdf8";      
+      if (t <= 0) return "#38bdf8";      
       if (t < 15) return "#34d399";     
       if (t < 25) return "#facc15";     
-      if (t < 32) return "#f97316";     
+      if (t < 33) return "#f97316";     
       return "#ef4444";                 
     }
 
     function getWindColor(val) {
-      if (val === "N/A" || val === undefined) return "#f8fafc";
+      if (!isValid(val)) return "#f8fafc";
       const w = Number(val);
-      if (w < 10) return "#34d399";     
-      if (w < 25) return "#38bdf8";     
+      if (w < 12) return "#34d399";     
+      if (w < 29) return "#38bdf8";     
       if (w < 45) return "#facc15";     
+      if (w < 65) return "#f97316";
       return "#ef4444";                 
     }
 
-    function getUvColor(val) {
-      if (val === "N/A" || val === undefined) return "#f8fafc";
+    function getUvInfo(val) {
+      if (!isValid(val)) return { color: "#f8fafc", label: "N/A" };
       const u = Number(val);
-      if (u < 3) return "#34d399";      
-      if (u < 6) return "#facc15";      
-      if (u < 8) return "#f97316";      
-      if (u < 11) return "#ef4444";     
-      return "#a855f7";                 
+      if (u < 3) return { color: "#34d399", label: "Alacsony" };
+      if (u < 6) return { color: "#facc15", label: "Mérsékelt" };
+      if (u < 8) return { color: "#f97316", label: "Magas" };
+      if (u < 11) return { color: "#ef4444", label: "Nagyon magas" };
+      return { color: "#a855f7", label: "Extrém" };
     }
 
-    async function loadWeather() {
+    // 16-os égtáj és szélirány-nyíl generáló
+    function parseWindDir(wdir) {
+      if (!isValid(wdir)) return { text: "N/A", deg: 0, arrow: "" };
+      const deg = ((Number(wdir) % 360) + 360) % 360;
+      const dirs = ['É', 'ÉÉK', 'ÉK', 'KÉK', 'K', 'KDK', 'DK', 'DDK', 'D', 'DDNY', 'DNY', 'NYDNY', 'NY', 'NYÉNY', 'ÉNY', 'ÉÉNY'];
+      const idx = Math.round(deg / 22.5) % 16;
+      return { text: dirs[idx], deg: Math.round(deg), arrow: "↓" };
+    }
+
+    // Beaufort skála átváltó
+    function getBeaufort(speedKmH) {
+      if (!isValid(speedKmH)) return null;
+      const s = Number(speedKmH);
+      if (s < 1) return { bft: 0, desc: "Szélcsend" };
+      if (s <= 5) return { bft: 1, desc: "Alig érezhető szellő" };
+      if (s <= 11) return { bft: 2, desc: "Könnyű szellő" };
+      if (s <= 19) return { bft: 3, desc: "Gyenge szél" };
+      if (s <= 28) return { bft: 4, desc: "Mérsékelt szél" };
+      if (s <= 38) return { bft: 5, desc: "Élénk szél" };
+      if (s <= 49) return { bft: 6, desc: "Erős szél" };
+      if (s <= 61) return { bft: 7, desc: "Viharos szél" };
+      if (s <= 74) return { bft: 8, desc: "Vihar" };
+      if (s <= 88) return { bft: 9, desc: "Heves vihar" };
+      return { bft: 10, desc: "Szélvész / Orkán" };
+    }
+
+    // Becsült gomolyfelhő alap magasság (Cloud Base) méterben: (T - Td) * 125 m
+    function calcCloudBase(temp, dew) {
+      if (!isValid(temp) || !isValid(dew)) return null;
+      const t = Number(temp);
+      const d = Number(dew);
+      const spread = t - d;
+      if (spread < 0) return 0;
+      return Math.round(spread * 125);
+    }
+
+    // Abszolút páratartalom (g/m³) a Magnus-képletből
+    function calcAbsoluteHumidity(temp, hum) {
+      if (!isValid(temp) || !isValid(hum)) return null;
+      const t = Number(temp);
+      const rh = Number(hum);
+      const svp = 6.112 * Math.exp((17.67 * t) / (t + 243.5));
+      const ah = (svp * rh * 2.1674) / (273.15 + t);
+      return ah.toFixed(1);
+    }
+
+    // Légsűrűség (kg/m³) számítás: p / (R * T)
+    function calcAirDensity(pressHpa, tempC) {
+      if (!isValid(pressHpa) || !isValid(tempC)) return null;
+      const p = Number(pressHpa) * 100; // Pa
+      const tKelvin = Number(tempC) + 273.15;
+      const density = p / (287.058 * tKelvin);
+      return density.toFixed(3);
+    }
+
+    // Balkány (47.77° É, 21.86° K) csillagászati napkelte/napnyugta számító algoritmusa
+    function calcBalkanySunTimes() {
+      const now = new Date();
+      const lat = 47.77;
+      const lon = 21.86;
+      const rad = Math.PI / 180;
+
+      const start = new Date(now.getFullYear(), 0, 0);
+      const diff = now - start;
+      const day = Math.floor(diff / 86400000);
+
+      const gamma = 2 * Math.PI / 365 * (day - 1);
+      const decl = 0.006918 - 0.399912 * Math.cos(gamma) + 0.070257 * Math.sin(gamma) - 0.006758 * Math.cos(2 * gamma) + 0.000907 * Math.sin(2 * gamma);
+      const eqtime = 229.18 * (0.000075 + 0.001868 * Math.cos(gamma) - 0.032077 * Math.sin(gamma) - 0.014615 * Math.cos(2 * gamma) - 0.040849 * Math.sin(2 * gamma));
+
+      const zenith = 90.833 * rad;
+      const cosH = (Math.cos(zenith) - Math.sin(lat * rad) * Math.sin(decl)) / (Math.cos(lat * rad) * Math.cos(decl));
+      if (cosH > 1 || cosH < -1) return;
+
+      const H0 = Math.acos(cosH) / rad;
+      const tzOffset = -now.getTimezoneOffset();
+      const noonUTC = 720 - (4 * lon) - eqtime;
+      const riseMin = Math.round(noonUTC - (H0 * 4) + tzOffset);
+      const setMin = Math.round(noonUTC + (H0 * 4) + tzOffset);
+
+      const fmtHM = (m) => {
+        const val = ((m % 1440) + 1440) % 1440;
+        return `${String(Math.floor(val / 60)).padStart(2, '0')}:${String(val % 60).padStart(2, '0')}`;
+      };
+
+      document.getElementById('sun-badge').innerHTML = `🌅 ${fmtHM(riseMin)} • 🌇 ${fmtHM(setMin)}`;
+    }
+
+    // --- ADATBETÖLTÉS & GYORSÍTÓTÁR (CACHE) ---
+
+    // 1. Azonnali renderelés a LocalStorage-ból (0 ms késleltetés!)
+    function hydrateFromCache() {
       try {
-        const cacheUrl = DEPLOY_URL + (DEPLOY_URL.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
-        const response = await fetch(cacheUrl, { cache: "no-store" });
-        const data = await response.json();
-
-        if (data && data.current) {
-          renderCurrentCard(data.current);
-          renderRainLog(data.rainLog);
-          renderStats(data.stats);
-          renderTableOrList(data.history || []);
-
-          const currentMin = new Date().getMinutes();
-          if (currentMin % 20 === 0 || !chartInstance) {
-            renderChart(data.history || []);
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.data) {
+            applyData(parsed.data, true);
           }
         }
-      } catch (err) {
-        console.error("Hiba az adatok frissítésekor: ", err);
+      } catch (e) {
+        console.warn("Gyorsítótár olvasási hiba", e);
       }
     }
 
-    function renderCurrentCard(curr) {
-      const leftPanel = document.getElementById('left-panel');
-      document.getElementById('time-top').innerText = "Utolsó mérés: " + curr.time;
+    // 2. Friss adatok aszinkron lekérése
+    async function fetchFreshWeather() {
+      if (isFetching) return;
+      isFetching = true;
+      const btn = document.getElementById('refresh-btn');
+      btn.classList.add('spinning');
+
+      try {
+        const cacheBuster = DEPLOY_URL + (DEPLOY_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
+        const res = await fetch(cacheBuster);
+        if (!res.ok) throw new Error("Hálózati válasz hiba: " + res.status);
+        const data = await res.json();
+
+        if (data && data.current) {
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
+          applyData(data, false);
+          document.getElementById('live-indicator').innerText = "ONLINE";
+          document.getElementById('live-indicator').style.color = "var(--accent-green)";
+        }
+      } catch (err) {
+        console.error("Adatfrissítési hiba:", err);
+        document.getElementById('live-indicator').innerText = "KAPCSOLAT HIBA";
+        document.getElementById('live-indicator').style.color = "var(--accent-orange)";
+      } finally {
+        isFetching = false;
+        btn.classList.remove('spinning');
+      }
+    }
+
+    function forceRefresh() {
+      fetchFreshWeather();
+    }
+
+    function applyData(data, isFromCache) {
+      if (!data || !data.current) return;
+      lastDataTime = data.current.time;
+
+      renderCurrentCard(data.current, isFromCache);
+      renderRainLog(data.rainLog);
+      renderStats(data.stats);
+      renderTableOrList(data.history || []);
       
-      const mainTempColor = getTempColor(curr.temp);
-      const windColor = getWindColor(curr.wind);
-      const uvColor = getUvColor(curr.uvi);
+      // Grafikon frissítése, ha a Chart.js már betöltődött
+      if (typeof Chart !== 'undefined') {
+        renderChart(data.history || []);
+      }
+    }
 
-      const humVal = Number(curr.hum) || 0;
+    // --- BAL OSZLOP (JELENLEGI MÉRÉSEK) MEGJELENÍTÉSE ---
 
-      const makeCard = (label, val, unit = "", color = "#f8fafc") => {
-        if (val === undefined || val === null || val === "N/A") return "";
+    function renderCurrentCard(curr, isCached) {
+      const leftPanel = document.getElementById('left-panel');
+      const timeTop = document.getElementById('time-top');
+
+      timeTop.innerHTML = `⏱️ Mérés: <strong>${curr.time || 'N/A'}</strong> ${isCached ? '<span class="cache-status">(tárolt)</span>' : ''}`;
+
+      const tColor = getTempColor(curr.temp);
+      const wColor = getWindColor(curr.wind);
+      const uvInfo = getUvInfo(curr.uvi);
+      const windDir = parseWindDir(curr.wdir);
+      const bft = getBeaufort(curr.wind);
+
+      const cloudBase = calcCloudBase(curr.temp, curr.dew);
+      const absHum = calcAbsoluteHumidity(curr.temp, curr.hum);
+      const airDensity = calcAirDensity(curr.bar, curr.temp);
+
+      const makeCard = (label, valStr, unit = "", color = "#f8fafc", subtext = "") => {
+        if (valStr === undefined || valStr === null || valStr === "" || valStr === "N/A") return "";
         return `
           <div class="grid-item">
             <div class="grid-label">${label}</div>
-            <div class="grid-value" style="color:${color}">${fmt(val)} ${unit}</div>
+            <div class="grid-value" style="color:${color}">${valStr} ${unit}</div>
+            ${subtext ? `<div class="grid-subtext">${subtext}</div>` : ''}
           </div>
         `;
       };
 
       let gridHtml = "";
-      gridHtml += makeCard("Harmatpont", curr.dew, "°C", getTempColor(curr.dew));
-      gridHtml += makeCard("Tűpontos Hőérzet", curr.chill, "°C", getTempColor(curr.chill));
-      gridHtml += makeCard("Hőindex", curr.heat, "°C", getTempColor(curr.heat));
-      gridHtml += makeCard("Légnyomás", curr.bar, "hPa", "#a855f7");
-      gridHtml += makeCard("Széllökés", curr.gust, "km/h", getWindColor(curr.gust));
-      gridHtml += makeCard("Szélirány", curr.wdir, "", "#38bdf8");
-      gridHtml += makeCard("Csapadék", curr.rain, "mm", "#38bdf8");
-      gridHtml += makeCard("Intenzitás", curr.rainrate, "mm/h", "#38bdf8");
-      gridHtml += makeCard("Napsugárzás", curr.solarrad, "W/m²", "#facc15");
-      gridHtml += makeCard("UV Index", curr.uvi, "", uvColor);
+      
+      // Alapvető meteorológiai paraméterek
+      gridHtml += makeCard("Harmatpont", fmt(curr.dew), "°C", getTempColor(curr.dew), "Kondenzációs küszöb");
+      gridHtml += makeCard("Tűpontos Hőérzet", fmt(curr.chill), "°C", getTempColor(curr.chill), "Wind Chill");
+      gridHtml += makeCard("Hőindex", fmt(curr.heat), "°C", getTempColor(curr.heat), "Heat Index");
+      gridHtml += makeCard("Légnyomás", fmt(curr.bar), "hPa", "var(--accent-purple)", "Relatív barométer");
+
+      // Részletes szél paraméterek
+      gridHtml += makeCard("Széllökés Max", fmt(curr.gust), "km/h", getWindColor(curr.gust), "Pillanatnyi csúcs");
+      
+      // Szélirány fokban és forgatott nyíllal
+      const arrowHtml = `<span class="wind-arrow" style="transform:rotate(${windDir.deg}deg)">${windDir.arrow}</span>`;
+      gridHtml += makeCard("Szélirány", `${windDir.text} (${windDir.deg}°)`, arrowHtml, "var(--accent-blue)", bft ? `${bft.desc} (Bft ${bft.bft})` : "");
+
+      // Sugárzás és UV
+      const luxVal = isValid(curr.solarrad) ? Math.round(Number(curr.solarrad) * 126.7).toLocaleString('hu-HU') + ' Lux' : '';
+      gridHtml += makeCard("Napsugárzás", fmt(curr.solarrad, 0), "W/m²", "var(--accent-yellow)", luxVal);
+      gridHtml += makeCard("UV Index", fmt(curr.uvi), "", uvInfo.color, uvInfo.label);
+
+      // Csapadék és intenzitás
+      gridHtml += makeCard("Napi Csapadék", fmt(curr.rain), "mm", "var(--accent-blue)", "00:00-tól");
+      gridHtml += makeCard("Csapadék Ráta", fmt(curr.rainrate), "mm/h", "var(--accent-blue)", Number(curr.rainrate) > 0 ? "Aktív hullás" : "Száraz idő");
+
+      // Profi számított klímamutatók
+      if (cloudBase !== null) {
+        gridHtml += makeCard("Felhőalap", cloudBase.toLocaleString('hu-HU'), "m", "var(--accent-blue)", "Gomolyképződési szint");
+      }
+      if (absHum !== null) {
+        gridHtml += makeCard("Abszolút Pára", absHum, "g/m³", "var(--accent-blue)", "Légtér víztartalom");
+      }
+      if (airDensity !== null) {
+        gridHtml += makeCard("Légsűrűség", airDensity, "kg/m³", "#94a3b8", "Barometrikus sűrűség");
+      }
+
+      // Beltéri szenzor (ha az állomás közvetíti)
+      if (isValid(curr.tempin) || isValid(curr.temp_in)) {
+        const inT = curr.tempin || curr.temp_in;
+        const inH = curr.humin || curr.humidityin || "";
+        gridHtml += makeCard("Beltéri Klíma", `${fmt(inT)} °C`, "", "#f8fafc", inH ? `Pára: ${fmt(inH)}%` : "");
+      }
 
       leftPanel.innerHTML = `
         <div class="hero-studio">
-          <div style="font-size:9px; font-weight:800; color:${mainTempColor}; letter-spacing:1px;">JELENLEGI HŐMÉRSÉKLET</div>
-          <div class="main-temp" style="color:${mainTempColor}; text-shadow: 0 0 25px ${mainTempColor}40;">${fmt(curr.temp)} °C</div>
+          <div style="font-size:10px; font-weight:800; color:${tColor}; letter-spacing:1px; text-transform:uppercase;">JELENLEGI HŐMÉRSÉKLET</div>
+          <div class="main-temp" style="color:${tColor}; text-shadow: 0 0 30px ${tColor}40;">${fmt(curr.temp)} °C</div>
           
           <div class="hero-stats">
             <div class="stat-box">
               <div class="stat-label">Páratartalom</div>
-              <div class="stat-value">${fmt(curr.hum)} %</div>
-              <div class="gauge-bar-bg"><div class="gauge-bar-fill" style="width:${Math.min(100, humVal)}%; background:#38bdf8;"></div></div>
+              <div class="stat-value" style="color:var(--accent-blue);">${fmt(curr.hum, 0)} %</div>
+              <div class="gauge-bar-bg"><div class="gauge-bar-fill" style="width:${Math.min(100, Number(curr.hum)||0)}%; background:var(--accent-blue);"></div></div>
             </div>
             <div class="stat-box">
               <div class="stat-label">Szélsebesség</div>
-              <div class="stat-value" style="color:${windColor}">${fmt(curr.wind)} km/h</div>
-              <div class="gauge-bar-bg"><div class="gauge-bar-fill" style="width:${Math.min(100, (Number(curr.wind)||0)*2)}%; background:${windColor};"></div></div>
+              <div class="stat-value" style="color:${wColor}">${fmt(curr.wind)} km/h</div>
+              <div class="gauge-bar-bg"><div class="gauge-bar-fill" style="width:${Math.min(100, (Number(curr.wind)||0)*2)}%; background:${wColor};"></div></div>
             </div>
           </div>
         </div>
@@ -544,32 +839,41 @@
       `;
     }
 
+    // --- CSAPADÉK NAPLÓ ---
+
     function renderRainLog(rainLog) {
       const panel = document.getElementById('rain-panel');
       if (!rainLog) {
-        panel.innerHTML = '<div style="color:var(--text-sub); font-size:11px;">Még nincs csapadék adat.</div>';
+        panel.innerHTML = '<div style="color:var(--text-sub); font-size:11px;">Még nincs csapadékadat.</div>';
         return;
       }
 
-      let html = `<div class="rain-summary-badge">🌧️ Mai Összes Csapadék (00:00-tól): ${rainLog.todayTotalRain} mm</div>`;
+      let html = `<div class="rain-summary-badge">
+        <span>🌧️ Mai összesített csapadék (00:00-tól):</span>
+        <span style="font-size:14px;">${fmt(rainLog.todayTotalRain)} mm</span>
+      </div>`;
 
       if (!rainLog.events || rainLog.events.length === 0) {
-        html += `<div style="color:var(--text-sub); font-size:11px; margin-top:2px;">☀️ Ma még nem esett csapadék Balkányban.</div>`;
+        html += `<div style="color:var(--text-sub); font-size:11px; padding: 4px 0;">☀️ Ma még nem fordult elő mérhető csapadékhullás Balkányban.</div>`;
       } else {
         rainLog.events.forEach(ev => {
           html += `<div class="rain-event-box">`;
           html += `<div class="rain-event-header">💧 Csapadék-esemény (${ev.startTime} - ${ev.endTime}) • Összesen: ${ev.totalMm} mm</div>`;
           
-          ev.segments.forEach(seg => {
-            html += `
-              <div class="rain-segment">
-                <span>${seg.timeRange} - ${seg.category}</span>
-                <span style="color:#38bdf8; font-weight:bold;">${seg.mm} mm</span>
-              </div>
-            `;
-          });
+          if (ev.segments && ev.segments.length > 0) {
+            ev.segments.forEach(seg => {
+              html += `
+                <div class="rain-segment">
+                  <span>${seg.timeRange} - ${seg.category}</span>
+                  <span style="color:var(--accent-blue); font-weight:bold;">${seg.mm} mm</span>
+                </div>
+              `;
+            });
+          }
 
-          html += `<div class="rain-event-end">${ev.summary}</div>`;
+          if (ev.summary) {
+            html += `<div class="rain-event-end">${ev.summary}</div>`;
+          }
           html += `</div>`;
         });
       }
@@ -577,80 +881,72 @@
       panel.innerHTML = html;
     }
 
+    // --- KLÍMAMUTATÓK ÉS REKORDOK ---
+
     function renderStats(stats) {
       const panel = document.getElementById('stats-panel');
       if (!stats) return;
 
-      panel.innerHTML = `
-        <div class="stats-grid">
-          <div class="stat-card-box">
-            <div class="stat-card-title">🔴 Mai Max (Tmax)</div>
-            <div class="stat-card-val" style="color:#ef4444;">${stats.today.maxTemp}</div>
-          </div>
-          <div class="stat-card-box">
-            <div class="stat-card-title">🔵 Mai Min (Tmin)</div>
-            <div class="stat-card-val" style="color:#38bdf8;">${stats.today.minTemp}</div>
-          </div>
-          <div class="stat-card-box">
-            <div class="stat-card-title">↕️ Napi Hőingás</div>
-            <div class="stat-card-val" style="color:#facc15;">${stats.today.rangeTemp}</div>
-          </div>
-          <div class="stat-card-box">
-            <div class="stat-card-title">🌡️ Mai Átlaghőm.</div>
-            <div class="stat-card-val" style="color:#34d399;">${stats.today.meanTemp}</div>
-          </div>
-          <div class="stat-card-box">
-            <div class="stat-card-title">⚡ Légnyomás (3h)</div>
-            <div class="stat-card-val" style="color:#a855f7;">${stats.trend3h.diff} (${stats.trend3h.text})</div>
-          </div>
-          <div class="stat-card-box">
-            <div class="stat-card-title">☀️ Napsütés Ma</div>
-            <div class="stat-card-val" style="color:#facc15;">${stats.today.sunHours}</div>
-          </div>
-          <div class="stat-card-box">
-            <div class="stat-card-title">🌫️ Köd / Harmat</div>
-            <div class="stat-card-val" style="color:#38bdf8;">${stats.today.fogRisk}</div>
-          </div>
-          <div class="stat-card-box">
-            <div class="stat-card-title">🏠 Energia Igény</div>
-            <div class="stat-card-val" style="color:#f97316;">${stats.today.cddHdd}</div>
-          </div>
-          <div class="stat-card-box">
-            <div class="stat-card-title">🌵 Aszály-Számláló</div>
-            <div class="stat-card-val" style="color:#38bdf8;">${stats.allTime.dryDays}</div>
-          </div>
-          <div class="stat-card-box">
-            <div class="stat-card-title">🧭 Uralkodó Szél</div>
-            <div class="stat-card-val" style="color:#38bdf8;">${stats.today.dominantWind}</div>
-          </div>
-          <div class="stat-card-box">
-            <div class="stat-card-title">🌧️ Utolsó Eső</div>
-            <div class="stat-card-val" style="color:#38bdf8;">${stats.allTime.lastRain}</div>
-          </div>
-          <div class="stat-card-box">
-            <div class="stat-card-title">☀️ Rekord Meleg</div>
-            <div class="stat-card-val" style="color:#f97316;">${stats.allTime.maxTemp}</div>
-          </div>
-          <div class="stat-card-box">
-            <div class="stat-card-title">❄️ Rekord Hideg</div>
-            <div class="stat-card-val" style="color:#38bdf8;">${stats.allTime.minTemp}</div>
-          </div>
+      const makeStatBox = (title, val, color = "#f8fafc") => `
+        <div class="stat-card-box">
+          <div class="stat-card-title">${title}</div>
+          <div class="stat-card-val" style="color:${color};">${val || 'N/A'}</div>
         </div>
       `;
+
+      let html = '<div class="stats-grid">';
+      if (stats.today) {
+        html += makeStatBox("🔴 Mai Max (Tmax)", stats.today.maxTemp, "var(--accent-red)");
+        html += makeStatBox("🔵 Mai Min (Tmin)", stats.today.minTemp, "var(--accent-blue)");
+        html += makeStatBox("↕️ Napi Hőingás", stats.today.rangeTemp, "var(--accent-yellow)");
+        html += makeStatBox("🌡️ Mai Átlaghőm.", stats.today.meanTemp, "var(--accent-green)");
+        html += makeStatBox("☀️ Napsütés Ma", stats.today.sunHours, "var(--accent-yellow)");
+        html += makeStatBox("🌫️ Köd / Harmat", stats.today.fogRisk, "var(--accent-blue)");
+        html += makeStatBox("🏠 Energia Igény", stats.today.cddHdd, "var(--accent-orange)");
+        html += makeStatBox("🧭 Uralkodó Szél", stats.today.dominantWind, "var(--accent-blue)");
+      }
+
+      if (stats.trend3h) {
+        html += makeStatBox("⚡ Légnyomás (3h)", `${stats.trend3h.diff} (${stats.trend3h.text})`, "var(--accent-purple)");
+      }
+
+      if (stats.allTime) {
+        html += makeStatBox("🌵 Aszály-Számláló", stats.allTime.dryDays, "var(--accent-blue)");
+        html += makeStatBox("🌧️ Utolsó Eső", stats.allTime.lastRain, "var(--accent-blue)");
+        html += makeStatBox("☀️ Rekord Meleg", stats.allTime.maxTemp, "var(--accent-orange)");
+        html += makeStatBox("❄️ Rekord Hideg", stats.allTime.minTemp, "var(--accent-blue)");
+      }
+      html += '</div>';
+
+      panel.innerHTML = html;
     }
 
+    // --- GRAFIKON (SZÉP ÉS GYORS CHART.JS FRISSÍTÉSSEL) ---
+
     function renderChart(history) {
-      const ctx = document.getElementById('weatherChart').getContext('2d');
+      if (!history || history.length === 0) return;
+      const canvas = document.getElementById('weatherChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
       const times = history.map(item => item.time);
-      const temps = history.map(item => Number(item.temp));
-      const winds = history.map(item => Number(item.wind));
-      const gusts = history.map(item => Number(item.gust));
+      const temps = history.map(item => isValid(item.temp) ? Number(item.temp) : null);
+      const winds = history.map(item => isValid(item.wind) ? Number(item.wind) : null);
+      const gusts = history.map(item => isValid(item.gust) ? Number(item.gust) : null);
 
-      const tempGradient = ctx.createLinearGradient(0, 0, 0, 300);
-      tempGradient.addColorStop(0, 'rgba(249, 115, 22, 0.4)');
+      if (chartInstance) {
+        // Ha már létezik, gyors adatfrissítés (nincs villogás és nincs felesleges újraépítés!)
+        chartInstance.data.labels = times;
+        chartInstance.data.datasets[0].data = temps;
+        chartInstance.data.datasets[1].data = winds;
+        chartInstance.data.datasets[2].data = gusts;
+        chartInstance.update('none');
+        return;
+      }
+
+      const tempGradient = ctx.createLinearGradient(0, 0, 0, 280);
+      tempGradient.addColorStop(0, 'rgba(249, 115, 22, 0.35)');
       tempGradient.addColorStop(1, 'rgba(249, 115, 22, 0.0)');
-
-      if (chartInstance) chartInstance.destroy();
 
       chartInstance = new Chart(ctx, {
         type: 'line',
@@ -662,10 +958,10 @@
               data: temps,
               borderColor: '#f97316',
               backgroundColor: tempGradient,
-              borderWidth: 3,
+              borderWidth: 2.5,
               pointBackgroundColor: '#f97316',
               pointRadius: 2,
-              pointHoverRadius: 6,
+              pointHoverRadius: 5,
               fill: true,
               tension: 0.35,
               yAxisID: 'y'
@@ -682,12 +978,12 @@
               yAxisID: 'y1'
             },
             {
-              label: 'Széllökés max (km/h)',
+              label: 'Széllökés Csúcs (km/h)',
               data: gusts,
               borderColor: '#c084fc',
-              borderDash: [4, 4],
+              borderDash: [3, 3],
               backgroundColor: 'transparent',
-              borderWidth: 2,
+              borderWidth: 1.5,
               pointRadius: 0,
               tension: 0.35,
               yAxisID: 'y1'
@@ -697,58 +993,78 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          animation: false,
           interaction: { mode: 'index', intersect: false },
           plugins: {
             legend: {
-              labels: { color: '#f8fafc', font: { family: 'Segoe UI', size: 11, weight: 'bold' } }
+              labels: { color: '#f8fafc', font: { size: 10, weight: 'bold' } }
             },
             tooltip: {
-              backgroundColor: '#0f172a',
+              backgroundColor: '#090d16',
               titleColor: '#f8fafc',
               bodyColor: '#cbd5e1',
-              borderColor: '#334155',
+              borderColor: '#1e2c45',
               borderWidth: 1,
               padding: 8
             }
           },
           scales: {
-            x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
-            y: { ticks: { color: '#f97316' }, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: '°C', color: '#f97316' } },
-            y1: { ticks: { color: '#38bdf8' }, grid: { display: false }, position: 'right', title: { display: true, text: 'km/h', color: '#38bdf8' } }
+            x: { 
+              ticks: { color: '#94a3b8', maxTicksLimit: 12, font: { size: 9 } },
+              grid: { color: 'rgba(255,255,255,0.04)' } 
+            },
+            y: { 
+              ticks: { color: '#f97316', font: { size: 9 } },
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              title: { display: true, text: '°C', color: '#f97316', font: { size: 10, weight: 'bold' } }
+            },
+            y1: { 
+              ticks: { color: '#38bdf8', font: { size: 9 } },
+              grid: { display: false },
+              position: 'right',
+              title: { display: true, text: 'km/h', color: '#38bdf8', font: { size: 10, weight: 'bold' } }
+            }
           }
         }
       });
     }
 
-    // DINAMIKUS NÉZET: Asztalin Tágas Táblázat, Mobilon Áttekinthető Kártyalista (Timeline Stream)
+    // --- TÁBLÁZAT ÉS MOBIL NÉZET ---
+
+    let currentCachedHistory = [];
+
     function renderTableOrList(history) {
+      if (history) currentCachedHistory = history;
       const container = document.getElementById('log-view-container');
-      if (!history || history.length === 0) {
-        container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-sub);">Még nincs mai előzmény adat!</div>';
+      const countLabel = document.getElementById('log-count');
+
+      if (!currentCachedHistory || currentCachedHistory.length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-sub);">Még nincs mai előzményadat.</div>';
         return;
       }
 
-      const reversed = [...history].reverse();
+      countLabel.innerText = `Összesen: ${currentCachedHistory.length} mérés`;
+
+      const reversed = [...currentCachedHistory].reverse();
       const isMobile = window.innerWidth < 768;
 
       if (isMobile) {
-        // MOBIL NÉZET: Szeletelt Óránkénti Kártyalista (Nincs kilógás!)
         let listHtml = `<div class="mobile-log-list">`;
         reversed.forEach(row => {
           const tColor = getTempColor(row.temp);
           const wColor = getWindColor(row.wind);
-
           listHtml += `
             <div class="mobile-log-card">
               <div class="mobile-log-top">
-                <span>⏱️ ${row.time}</span>
+                <span>⏱️ ${row.time || 'N/A'}</span>
                 <span style="color:${tColor}">${fmt(row.temp)} °C</span>
-                <span style="color:#38bdf8">🌧️ ${fmt(row.rain)} mm</span>
+                <span style="color:var(--accent-blue)">🌧️ ${fmt(row.rain)} mm</span>
               </div>
               <div class="mobile-log-sub">
-                <span>Pára: ${fmt(row.hum)}%</span>
+                <span>Pára: ${fmt(row.hum, 0)}%</span>
                 <span>Légny.: ${fmt(row.bar)} hPa</span>
                 <span style="color:${wColor}">Szél: ${fmt(row.wind)} km/h</span>
+                <span style="color:var(--accent-purple)">Lökés: ${fmt(row.gust)} km/h</span>
               </div>
             </div>
           `;
@@ -756,7 +1072,6 @@
         listHtml += `</div>`;
         container.innerHTML = listHtml;
       } else {
-        // ASZTALI NÉZET: Tágas 7-Oszlopos Táblázat
         let tableHtml = `
           <div class="table-wrapper">
             <table>
@@ -776,16 +1091,15 @@
         reversed.forEach(row => {
           const tColor = getTempColor(row.temp);
           const wColor = getWindColor(row.wind);
-
           tableHtml += `
             <tr>
-              <td><strong>${row.time}</strong></td>
+              <td><strong>${row.time || 'N/A'}</strong></td>
               <td style="color:${tColor}; font-weight:bold;">${fmt(row.temp)} °C</td>
-              <td>${fmt(row.hum)} %</td>
+              <td>${fmt(row.hum, 0)} %</td>
               <td>${fmt(row.bar)} hPa</td>
               <td style="color:${wColor}; font-weight:bold;">${fmt(row.wind)} km/h</td>
-              <td style="color:#c084fc;">${fmt(row.gust)} km/h</td>
-              <td>${fmt(row.rain)} mm</td>
+              <td style="color:var(--accent-purple);">${fmt(row.gust)} km/h</td>
+              <td style="color:var(--accent-blue);">${fmt(row.rain)} mm</td>
             </tr>
           `;
         });
@@ -794,33 +1108,43 @@
       }
     }
 
-    function scheduleClockSync() {
+    // --- IDŐZÍTŐ & HÁTTÉRBEN TÖRTÉNŐ SZINKRONIZÁCIÓ ---
+
+    function scheduleSync() {
       const now = new Date();
       const mins = now.getMinutes();
       const secs = now.getSeconds();
-      const ms = now.getMilliseconds();
       
-      const nextTargetMin = Math.ceil((mins + 0.001) / 10) * 10;
+      // 10 percenkénti állomásszinkronizálás célzása (pl. :00, :10, :20, stb.)
+      const nextTargetMin = (Math.floor(mins / 10) + 1) * 10;
       const diffMins = nextTargetMin - mins;
-      const msToNext = (diffMins * 60 * 1000) - (secs * 1000) - ms + 2000;
-      
-      setTimeout(function() {
-        loadWeather();
-        scheduleClockSync();
+      const msToNext = (diffMins * 60 - secs) * 1000 + 3000; // +3 mp ráhagyás
+
+      setTimeout(() => {
+        fetchFreshWeather();
+        scheduleSync();
       }, msToNext);
     }
 
-    window.onload = function() {
-      loadWeather();
-      scheduleClockSync();
-    };
+    // Kezdő inicializálás
+    window.addEventListener('DOMContentLoaded', () => {
+      calcBalkanySunTimes();
+      hydrateFromCache();     // 1. Azonnal mutatja az előző állapotot
+      fetchFreshWeather();    // 2. Háttérben frissíti a legújabbra
+      scheduleSync();
+    });
 
-    document.addEventListener("visibilitychange", function() {
+    // Képernyőméret-változás (pl. telefon elforgatása) esetén dinamikusan vált a nézet
+    window.addEventListener('resize', () => {
+      renderTableOrList();
+    });
+
+    // Ha visszatér a felhasználó az oldalra (fülváltás után)
+    document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
-        loadWeather();
+        fetchFreshWeather();
       }
     });
-    window.addEventListener("focus", loadWeather);
   </script>
 </body>
 </html>
