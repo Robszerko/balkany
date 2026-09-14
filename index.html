@@ -7,13 +7,14 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
   <style>
     :root {
-      --bg-dark: #090d16;
-      --card-bg: #131d2e;
-      --card-border: #1e2c45;
-      --card-hover: #263552;
+      --bg-dark: #070a12;
+      --card-bg: #111a2c;
+      --card-border: #1a273d;
+      --card-hover: #223350;
       --text-bright: #f8fafc;
       --text-sub: #94a3b8;
       --accent-blue: #38bdf8;
+      --accent-cyan: #06b6d4;
       --accent-green: #34d399;
       --accent-yellow: #facc15;
       --accent-orange: #f97316;
@@ -44,7 +45,7 @@
     }
 
     .dashboard {
-      max-width: 1400px;
+      max-width: 1440px;
       margin: 0 auto;
       width: 100%;
     }
@@ -212,7 +213,6 @@
       letter-spacing: -1px;
     }
 
-    /* Két soros Min/Max Konténer */
     .hero-extremes-container {
       display: flex;
       flex-direction: column;
@@ -550,6 +550,317 @@
       display: inline-block;
       transition: transform 0.5s ease;
       font-size: 11px;
+    }
+
+    /* ============================================================ */
+    /* PRÉMIUM CSAPADÉK FÓKUSZ & ÓRÁS IDŐVONAL */
+    /* ============================================================ */
+    .precip-focus-card {
+      background: linear-gradient(135deg, rgba(14, 30, 52, 0.95) 0%, rgba(10, 18, 32, 0.98) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 16px;
+      padding: clamp(12px, 2vw, 18px);
+      margin-bottom: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .precip-focus-card::before {
+      content: "";
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 140px;
+      height: 140px;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+    }
+
+    .nowcast-head-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nowcast-title {
+      font-size: clamp(11.5px, 1.6vw, 13px);
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .model-bias-tag {
+      font-size: 9px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 10px;
+      background: rgba(250, 204, 21, 0.1);
+      border: 1px solid rgba(250, 204, 21, 0.3);
+      color: var(--accent-yellow);
+    }
+
+    .nowcast-body-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+    }
+
+    @media (max-width: 680px) {
+      .nowcast-body-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .nowcast-metric-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nowcast-dial {
+      width: clamp(66px, 15vw, 78px);
+      height: clamp(66px, 15vw, 78px);
+      border-radius: 50%;
+      background: radial-gradient(circle, #0b1526 55%, #152744 100%);
+      border: 2px solid rgba(56, 189, 248, 0.35);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+    }
+
+    .dial-pct {
+      font-size: clamp(16px, 3.5vw, 20px);
+      font-weight: 900;
+      color: var(--accent-blue);
+      line-height: 1;
+    }
+
+    .dial-lbl {
+      font-size: 7.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .nowcast-metric-texts {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .nowcast-big-phrase {
+      font-size: clamp(13.5px, 2.2vw, 16px);
+      font-weight: 900;
+      color: var(--text-bright);
+      line-height: 1.2;
+    }
+
+    .nowcast-qpf-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: clamp(10.5px, 1.8vw, 12px);
+      font-weight: 800;
+      color: var(--accent-cyan);
+      margin-top: 2px;
+    }
+
+    .next-rain-timer {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px dashed rgba(56, 189, 248, 0.3);
+      border-radius: 10px;
+      padding: 6px 10px;
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: clamp(9px, 1.4vw, 10.5px);
+      font-weight: 700;
+      flex-wrap: wrap;
+    }
+
+    .timer-bold {
+      color: var(--accent-blue);
+      font-weight: 900;
+    }
+
+    .calib-note-box {
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-left: 3px solid var(--accent-yellow);
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: clamp(8.5px, 1.25vw, 10px);
+      color: #cbd5e1;
+      line-height: 1.35;
+    }
+
+    .calib-note-title {
+      font-size: 8px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent-yellow);
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hourly-track-wrapper {
+      position: relative;
+      width: 100%;
+      margin-top: 6px;
+    }
+
+    .hourly-scroll-track {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: 6px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .hourly-scroll-track::-webkit-scrollbar { height: 4px; }
+    .hourly-scroll-track::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.3);
+      border-radius: 3px;
+    }
+
+    .hourly-chip {
+      background: rgba(255, 255, 255, 0.025);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      scroll-snap-align: start;
+      flex: 0 0 clamp(84px, 19vw, 98px);
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+
+    .hourly-chip:hover {
+      background: rgba(56, 189, 248, 0.06);
+      border-color: rgba(56, 189, 248, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .h-time {
+      font-size: clamp(9.5px, 1.4vw, 10.5px);
+      font-weight: 800;
+      color: var(--accent-blue);
+    }
+
+    .h-icon {
+      font-size: clamp(20px, 3.8vw, 24px);
+      line-height: 1;
+      margin: 1px 0;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    }
+
+    .h-temp {
+      font-size: clamp(12.5px, 2vw, 14.5px);
+      font-weight: 900;
+      color: var(--text-bright);
+      line-height: 1;
+    }
+
+    .h-rain-pill {
+      font-size: 8.5px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      margin-top: 2px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .h-rain-pill.dry {
+      background: rgba(255,255,255,0.03);
+      color: var(--text-sub);
+    }
+
+    .h-rain-pill.wet {
+      background: rgba(56, 189, 248, 0.18);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .h-qpf {
+      font-size: 7.5px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+    }
+
+    .h-wind {
+      font-size: 8px;
+      color: var(--text-sub);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      margin-top: 1px;
+    }
+
+    .lifestyle-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .life-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .life-lbl {
+      font-size: 8px;
+      font-weight: 800;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .life-val {
+      font-size: clamp(10.5px, 1.8vw, 12px);
+      font-weight: 900;
+      margin-top: 2px;
+    }
+
+    .life-sub {
+      font-size: 7.5px;
+      color: var(--text-sub);
+      line-height: 1.2;
+      margin-top: 1px;
     }
 
     /* 5 Napos Előrejelzés */
@@ -898,6 +1209,7 @@
 
   <div class="dashboard">
     
+    <!-- Fejléc -->
     <div class="tv-header">
       <div class="header-branding">
         <div class="station-title">
@@ -907,7 +1219,7 @@
         <div class="location-tag">📍 Balkány, Szabolcs-Szatmár-Bereg • 47.77° É, 21.86° K • Tszf: 142 m</div>
       </div>
       <div class="header-actions">
-        <div class="source-badge" id="source-badge">Forrás: Weathercloud (6132437500)</div>
+        <div class="source-badge" id="source-badge">Weathercloud + TWC Radar</div>
         <div class="badge-pill" id="sun-badge">☀️ Nap: --:-- • --:--</div>
         <div class="badge-pill" id="time-top">⏱️ Betöltés...</div>
         <button class="refresh-btn" id="refresh-btn" onclick="forceRefresh()" title="Azonnali frissítés">
@@ -921,8 +1233,10 @@
       </div>
     </div>
 
+    <!-- Fő rács -->
     <div class="layout-grid">
       
+      <!-- BAL OLDAL: PWS ÉLŐ MÉRÉSEK ÉS SZÉLMECHANIKA -->
       <div>
         <div class="card">
           <div class="card-title">
@@ -1006,13 +1320,99 @@
         </div>
       </div>
 
+      <!-- JOBB OLDAL: ELŐREJELZÉSEK, CSAPADÉK FÓKUSZ, KLÍMA ÉS GRAFIKON -->
       <div>
         
-        <!-- 5 Napos Balkányi Előrejelzés Kártya (Weather.com) -->
+        <!-- PRÉMIUM CSAPADÉK FÓKUSZ & ÓRÁS IDŐVONAL (SZIGORÚAN JÖVŐBELI ÓRÁK!) -->
+        <div class="precip-focus-card">
+          <div class="nowcast-head-flex">
+            <div class="nowcast-title">
+              <span>💧 CSAPADÉK-FÓKUSZ & ÓRÁS KITEKINTÉS</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span id="model-bias-badge" class="model-bias-tag">Modell-PWS delta: --</span>
+              <div id="hourly-sync-tag" class="badge-pill" style="font-size:8.5px; color:var(--accent-cyan);">
+                ● 10 perces szinkron
+              </div>
+            </div>
+          </div>
+
+          <div class="nowcast-body-grid">
+            <div class="nowcast-metric-box">
+              <div class="nowcast-dial">
+                <div class="dial-pct" id="nowcast-pct">--%</div>
+                <div class="dial-lbl">Várható esély</div>
+              </div>
+              <div class="nowcast-metric-texts">
+                <div class="stat-label" style="font-size:8px; color:var(--accent-blue)" id="nowcast-target-lbl">Következő óra (11:00)</div>
+                <div class="nowcast-big-phrase" id="nowcast-phrase">Elemzés alatt...</div>
+                <div class="nowcast-qpf-tag">
+                  <span>🌧️ Várható vízhozam:</span>
+                  <strong id="nowcast-qpf-val">-- mm</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="calib-note-box" id="calib-box">
+              <div class="calib-note-title">
+                <span>🎯 METEOROLÓGIAI DIAGNOSZTIKA</span>
+              </div>
+              <div id="calib-text">
+                A modell lokális csapadék- és konvekciós paramétereinek vizsgálata folyamatban...
+              </div>
+            </div>
+          </div>
+
+          <!-- Következő Eső Időzítő Szalag -->
+          <div class="next-rain-timer" id="rain-timer-banner">
+            <span>⏱️ Várható csapadék érkezése:</span>
+            <span class="timer-bold" id="rain-timer-val">Számítás...</span>
+          </div>
+
+          <!-- Részletes Órás Szalag (KIZÁRÓLAG JÖVŐBELI ÓRÁK!) -->
+          <div class="hourly-track-wrapper">
+            <div class="swipe-hint">👉 Lapozz a következő órákért (hőm., csapadék %, szél)</div>
+            <div class="hourly-scroll-track" id="hourly-container">
+              <div style="padding:15px; color:var(--text-sub); font-size:10.5px;">Órás előrejelzés betöltése...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agrometeorológiai & Életmód Asszisztens Kártya -->
         <div class="card">
           <div class="card-title">
-            <span>📅 5 NAPOS BALKÁNYI ELŐREJELZÉS (WEATHER.COM)</span>
-            <span id="fc-status-tag" style="font-size:9px; color:var(--accent-blue);">● 20 percenként frissül</span>
+            <span>🌿 AGROMETEOROLÓGIA ÉS HÉTKÖZNAPI TERVEZŐ</span>
+            <span style="font-size:9px; color:var(--accent-green);">Balkányi környezet</span>
+          </div>
+          <div class="lifestyle-grid" id="lifestyle-panel">
+            <div class="life-card">
+              <div class="life-lbl">🚜 Permetezés</div>
+              <div class="life-val" id="spray-val" style="color:var(--accent-green)">Alkalmas</div>
+              <div class="life-sub" id="spray-sub">Szél < 15 km/h, nincs eső</div>
+            </div>
+            <div class="life-card">
+              <div class="life-lbl">🚗 Autómosás</div>
+              <div class="life-val" id="carwash-val" style="color:var(--accent-green)">Kiváló</div>
+              <div class="life-sub" id="carwash-sub">24h száraz ablak</div>
+            </div>
+            <div class="life-card">
+              <div class="life-lbl">🧺 Teregetés / Kint</div>
+              <div class="life-val" id="dry-val" style="color:var(--accent-blue)">Gyors száradás</div>
+              <div class="life-sub" id="dry-sub">Páratartalom alapján</div>
+            </div>
+            <div class="life-card">
+              <div class="life-lbl">💨 Szellőztetés</div>
+              <div class="life-val" id="vent-val" style="color:var(--accent-yellow)">Ajánlott</div>
+              <div class="life-sub" id="vent-sub">Friss, tiszta légtömeg</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 5 Napos Balkányi Előrejelzés Kártya -->
+        <div class="card">
+          <div class="card-title">
+            <span>📅 5 NAPOS BALKÁNYI KITEKINTÉS (WEATHER.COM)</span>
+            <span id="fc-status-tag" style="font-size:9px; color:var(--accent-blue);">● Naponta többször frissül</span>
           </div>
 
           <div class="forecast-scroll-wrapper">
@@ -1025,6 +1425,7 @@
           </div>
         </div>
 
+        <!-- Csapadéknapló -->
         <div class="card">
           <div class="card-title">🌧️ MAI CSAPADÉK-ESEMÉNY NAPLÓ (00:00 - 23:59)</div>
           <div id="rain-panel">
@@ -1032,6 +1433,7 @@
           </div>
         </div>
 
+        <!-- Klíma Statisztikák -->
         <div class="card">
           <div class="card-title">📊 PROFI METEOROLÓGIAI KLÍMAMUTATÓK ÉS REKORDOK</div>
           <div id="stats-panel">
@@ -1039,6 +1441,7 @@
           </div>
         </div>
 
+        <!-- Grafikon -->
         <div class="card chart-card">
           <div class="card-title">
             <span>📈 MAI HŐMÉRSÉKLET ÉS SZÉL DINAMIKA</span>
@@ -1049,6 +1452,7 @@
           </div>
         </div>
 
+        <!-- Mérések Idővonala -->
         <div class="card">
           <div class="card-title">
             <span>📜 MAI MÉRÉSEK IDŐVONALA</span>
@@ -1088,11 +1492,14 @@
 
     const CACHE_KEY = "balkany_weather_cache_v2";
     const FC_CACHE_KEY = "balkany_forecast_cache_v1";
+    const HOURLY_CACHE_KEY = "balkany_hourly_cache_v2";
 
     let chartInstance = null;
-    let isFetching = false;
+    let isFetchingWeather = false;
+    let isFetchingHourly = false;
     let latestCurrentData = null;
     let latestExtremes = null;
+    let cachedHourlyRaw = null;
 
     let latestFcMax = "--";
     let latestFcMin = "--";
@@ -1167,11 +1574,10 @@
       return { bft: 10, desc: "Szélvész / Orkán", color: "#ef4444", pct: 100 };
     }
 
+    /* Termodinamikai és fizikai számítások PWS adatokból */
     function calcCloudBase(temp, dew) {
       if (!isValid(temp) || !isValid(dew)) return null;
-      const t = Number(temp);
-      const d = Number(dew);
-      const spread = t - d;
+      const spread = Number(temp) - Number(dew);
       if (spread < 0) return 0;
       return Math.round(spread * 125);
     }
@@ -1191,6 +1597,50 @@
       const tKelvin = Number(tempC) + 273.15;
       const density = p / (287.058 * tKelvin);
       return density.toFixed(3);
+    }
+
+    // 100% PONTOS TERMODINAMIKA: Páradéficit (VPD - kPa)
+    function calcVPD(temp, hum) {
+      if (!isValid(temp) || !isValid(hum)) return null;
+      const t = Number(temp);
+      const rh = Number(hum);
+      const es = 0.61078 * Math.exp((17.27 * t) / (t + 237.3)); // Telítési gőznyomás (kPa)
+      const ea = es * (rh / 100); // Tényleges gőznyomás
+      const vpd = es - ea;
+      return vpd.toFixed(2);
+    }
+
+    // 100% PONTOS TERMODINAMIKA: Nedves Hőmérséklet (Wet Bulb - Stull formula)
+    function calcWetBulb(temp, hum) {
+      if (!isValid(temp) || !isValid(hum)) return null;
+      const t = Number(temp);
+      const rh = Number(hum);
+      const tw = t * Math.atan(0.151977 * Math.pow(rh + 8.313659, 0.5)) +
+                 Math.atan(t + rh) -
+                 Math.atan(rh - 1.676331) +
+                 0.00391838 * Math.pow(rh, 1.5) * Math.atan(0.023101 * rh) -
+                 4.686035;
+      return tw.toFixed(1);
+    }
+
+    // 100% PONTOS MECHANIKA: Szél Dinamikus Nyomása (kg/m² a felületekre)
+    function calcWindPressure(windKmh, density) {
+      if (!isValid(windKmh)) return null;
+      const v = Number(windKmh) / 3.6; // m/s
+      const rho = density ? Number(density) : 1.225; // kg/m3
+      const q = 0.5 * rho * v * v; // N/m2 (Pascal)
+      const kgM2 = q / 9.81; // kg erő / m2
+      return kgM2.toFixed(1);
+    }
+
+    // Napi becsült párolgási vízveszteség (Evapotranspiráció mm)
+    function calcEvapotranspiration(solarRad, temp) {
+      if (!isValid(solarRad) || !isValid(temp)) return null;
+      const sr = Number(solarRad);
+      const t = Math.max(0, Number(temp));
+      // Becsült órás párolgás Penman-szerű közelítéssel
+      const etHour = (0.00015 * sr * (t + 10)) / 2.45;
+      return etHour.toFixed(2);
     }
 
     function calcBalkanySunTimes() {
@@ -1249,6 +1699,326 @@
       return isNight ? "🌙" : "⛅";
     }
 
+    /* ============================================================ */
+    /* WEATHER.COM ÓRÁS ELŐREJELZÉS & DIAGNOSZTIKA                  */
+    /* ============================================================ */
+    function hydrateHourlyFromCache() {
+      try {
+        const cached = localStorage.getItem(HOURLY_CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.data) {
+            cachedHourlyRaw = parsed.data;
+            renderHourlyAndNowcast(parsed.data);
+          }
+        }
+      } catch(e) {}
+    }
+
+    async function fetchHourlyForecastIfNeeded(force = false) {
+      if (isFetchingHourly) return;
+      try {
+        const cached = localStorage.getItem(HOURLY_CACHE_KEY);
+        if (!force && cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.timestamp && (Date.now() - parsed.timestamp < 600000)) {
+            return;
+          }
+        }
+
+        isFetchingHourly = true;
+        const hourlyUrl = `https://api.weather.com/v3/wx/forecast/hourly/2day?geocode=47.77,21.86&format=json&units=m&language=hu-HU&apiKey=${WU_API_KEY}`;
+        const res = await fetch(hourlyUrl);
+        if (!res.ok) throw new Error("Hourly fetch hiba: " + res.status);
+        const data = await res.json();
+
+        if (data && data.validTimeLocal && data.validTimeLocal.length > 0) {
+          cachedHourlyRaw = data;
+          try {
+            localStorage.setItem(HOURLY_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
+          } catch(e) {}
+          renderHourlyAndNowcast(data);
+          const syncTag = document.getElementById('hourly-sync-tag');
+          if (syncTag) {
+            const now = new Date();
+            syncTag.innerHTML = `● Szinkron: ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+          }
+        }
+      } catch (err) {
+        console.warn("Balkány órás lekérési hiba:", err);
+      } finally {
+        isFetchingHourly = false;
+      }
+    }
+
+    function evaluatePrecipType(phrase, pop, qpf) {
+      const p = (phrase || "").toLowerCase();
+      const prob = Number(pop) || 0;
+      const rainAmount = Number(qpf) || 0;
+
+      if (prob < 15 && rainAmount <= 0.05) {
+        return {
+          refinedPhrase: "Gyakorlatilag száraz idő",
+          statusColor: "var(--accent-green)",
+          note: "Nincs érdemi csapadékhajlam Balkány körzetében. Zavartalan szabadtéri időszak.",
+          isWet: false
+        };
+      }
+
+      const isShowerMentioned = p.includes("zápor") || p.includes("zivatar") || p.includes("shower");
+
+      if (isShowerMentioned && rainAmount < 0.6) {
+        return {
+          refinedPhrase: prob > 40 ? "Futó csepergés / gyenge szitálás" : "Kevés esélyű elszórt csepergés",
+          statusColor: "var(--accent-yellow)",
+          note: "A modell konvektív záport feltételez, de a várt lokális vízmennyiség minimális (<0.6 mm). A valóságban legfeljebb pár kósza csepp, futó szitálás vagy száraz felhőátvonulás várható!",
+          isWet: true
+        };
+      }
+
+      if (rainAmount > 0 && rainAmount < 0.8) {
+        return {
+          refinedPhrase: "Gyenge eső / szitálás",
+          statusColor: "var(--accent-blue)",
+          note: "Könnyű, átmeneti csapadékhullás. Nem okoz komolyabb vízhozamot.",
+          isWet: true
+        };
+      }
+
+      if (rainAmount >= 0.8 && rainAmount < 4.0) {
+        return {
+          refinedPhrase: isShowerMentioned ? "Mérhető helyi záporeső" : "Mérsékelt, áztató eső",
+          statusColor: "var(--accent-blue)",
+          note: "Kifejezett csapadékképződés, mérhető esőzés (több milliméter várt csapadékösszeg).",
+          isWet: true
+        };
+      }
+
+      if (rainAmount >= 4.0 || p.includes("heves") || p.includes("zivatar")) {
+        return {
+          refinedPhrase: "Heves zápor / Zivatar lehetséges",
+          statusColor: "var(--accent-red)",
+          note: "Jelentős mennyiségű csapadéktömb, intenzív góc és látótávolság-csökkenés alakulhat ki.",
+          isWet: true
+        };
+      }
+
+      return {
+        refinedPhrase: phrase || "Változó csapadékhajlam",
+        statusColor: prob > 40 ? "var(--accent-blue)" : "var(--text-sub)",
+        note: `Modell becslés: ${prob}% esély, ${rainAmount.toFixed(1)} mm várható összeg.`,
+        isWet: prob > 30
+      };
+    }
+
+    // TŰPONTOS ÓRÁS SZŰRŐ ÉS MEGJELENÍTŐ (11:00 MEGJELENÉS JAVÍTVA!)
+    function renderHourlyAndNowcast(hourlyData) {
+      if (!hourlyData || !hourlyData.validTimeLocal) return;
+
+      const totalItems = hourlyData.validTimeLocal.length;
+      if (totalItems === 0) return;
+
+      const now = new Date();
+      const currentEpoch = now.getTime();
+
+      // KERESSÜK KI AZ ÖSSZES VALÓBAN JÖVŐBELI ÓRÁT!
+      const futureIndices = [];
+      for (let i = 0; i < totalItems; i++) {
+        const itemDate = new Date(hourlyData.validTimeLocal[i]);
+        // Ha az adott óra időbélyege a jelenlegi pillanat után van (pl. 11:00:00 > 10:19:xx)
+        if (itemDate.getTime() > currentEpoch) {
+          futureIndices.push(i);
+        }
+      }
+
+      // Ha esetleg a legelső elem pont az aktuális óra és nincs jövőbeli, fallback
+      const validIndices = futureIndices.length > 0 ? futureIndices : [0];
+      const nextHourIdx = validIndices[0];
+
+      // Kinyerjük a legközelebbi óra címkéjét (pl. 11:00)
+      let nextHourLabelStr = "Következő óra";
+      if (hourlyData.validTimeLocal[nextHourIdx]) {
+        const dNext = new Date(hourlyData.validTimeLocal[nextHourIdx]);
+        if (!isNaN(dNext.getTime())) {
+          nextHourLabelStr = `Következő óra (${String(dNext.getHours()).padStart(2, '0')}:00)`;
+        }
+      }
+      const targetLblEl = document.getElementById('nowcast-target-lbl');
+      if (targetLblEl) targetLblEl.innerText = nextHourLabelStr;
+
+      // 1. KÖVETKEZŐ ÓRA (11:00) NOWCAST BLOKK
+      const nextHourPop = hourlyData.precipChance ? (hourlyData.precipChance[nextHourIdx] || 0) : 0;
+      const nextHourQpf = hourlyData.qpf ? (Number(hourlyData.qpf[nextHourIdx]) || 0) : 0;
+      const nextHourPhrase = hourlyData.wxPhraseLong ? hourlyData.wxPhraseLong[nextHourIdx] : "Változó idő";
+
+      const analysis = evaluatePrecipType(nextHourPhrase, nextHourPop, nextHourQpf);
+
+      const nowcastPctEl = document.getElementById('nowcast-pct');
+      const nowcastPhraseEl = document.getElementById('nowcast-phrase');
+      const nowcastQpfEl = document.getElementById('nowcast-qpf-val');
+      const calibTextEl = document.getElementById('calib-text');
+
+      if (nowcastPctEl) {
+        nowcastPctEl.innerText = `${nextHourPop}%`;
+        nowcastPctEl.style.color = analysis.statusColor;
+      }
+      if (nowcastPhraseEl) {
+        nowcastPhraseEl.innerText = analysis.refinedPhrase;
+        nowcastPhraseEl.style.color = analysis.statusColor;
+      }
+      if (nowcastQpfEl) {
+        nowcastQpfEl.innerText = `${nextHourQpf.toFixed(1)} mm`;
+      }
+      if (calibTextEl) {
+        calibTextEl.innerHTML = analysis.note;
+      }
+
+      // 2. KÖVETKEZŐ ESŐ IDŐZÍTŐ
+      let nextRainText = "A következő 24 órában nem várható eső";
+      for (let k = 0; k < Math.min(24, validIndices.length); k++) {
+        const idx = validIndices[k];
+        const pop = hourlyData.precipChance ? (hourlyData.precipChance[idx] || 0) : 0;
+        const qpf = hourlyData.qpf ? (Number(hourlyData.qpf[idx]) || 0) : 0;
+        if (pop >= 40 || qpf >= 0.3) {
+          const rDate = new Date(hourlyData.validTimeLocal[idx]);
+          const hStr = `${String(rDate.getHours()).padStart(2, '0')}:00`;
+          const isTomorrow = rDate.getDate() !== now.getDate();
+          nextRainText = `${isTomorrow ? 'Holnap' : 'Ma'} ${hStr} körül (~${qpf.toFixed(1)} mm, ${pop}%)`;
+          break;
+        }
+      }
+      const timerValEl = document.getElementById('rain-timer-val');
+      if (timerValEl) timerValEl.innerText = nextRainText;
+
+      // 3. PWS vs MODELL DELTA KALIBRÁCIÓ
+      if (latestCurrentData && isValid(latestCurrentData.temp) && hourlyData.temperature && isValid(hourlyData.temperature[0])) {
+        const modelTemp = Number(hourlyData.temperature[0]);
+        const pwsTemp = Number(latestCurrentData.temp);
+        const diff = (pwsTemp - modelTemp).toFixed(1);
+        const diffSign = diff > 0 ? `+${diff}` : diff;
+        const biasBadge = document.getElementById('model-bias-badge');
+        if (biasBadge) {
+          biasBadge.innerText = `PWS vs Modell: ${diffSign} °C eltérés`;
+          if (Math.abs(diff) <= 0.8) {
+            biasBadge.style.color = "var(--accent-green)";
+            biasBadge.style.borderColor = "rgba(52, 211, 153, 0.3)";
+          } else {
+            biasBadge.style.color = "var(--accent-yellow)";
+            biasBadge.style.borderColor = "rgba(250, 204, 21, 0.3)";
+          }
+        }
+      }
+
+      // 4. ÓRÁNKÉNTI CHIP IDŐVONAL (Garantáltan a 11:00-tól indul!)
+      const maxDisplayHours = 18;
+      const container = document.getElementById('hourly-container');
+      if (!container) return;
+
+      let html = "";
+      for (let k = 0; k < Math.min(maxDisplayHours, validIndices.length); k++) {
+        const i = validIndices[k];
+        const timeStr = hourlyData.validTimeLocal[i];
+        let hourLabel = "--:--";
+        let isNight = false;
+        if (timeStr) {
+          const d = new Date(timeStr);
+          if (!isNaN(d.getTime())) {
+            const h = d.getHours();
+            hourLabel = `${String(h).padStart(2, '0')}:00`;
+            if (h < 6 || h >= 20) isNight = true;
+          }
+        }
+
+        const iconCode = hourlyData.iconCode ? hourlyData.iconCode[i] : 30;
+        const iconEmoji = getWeatherIcon(iconCode, isNight);
+        const temp = isValid(hourlyData.temperature[i]) ? Math.round(hourlyData.temperature[i]) : "--";
+        const pop = hourlyData.precipChance ? (hourlyData.precipChance[i] || 0) : 0;
+        const qpf = hourlyData.qpf ? (Number(hourlyData.qpf[i]) || 0) : 0;
+        const windSpd = isValid(hourlyData.windSpeed[i]) ? Math.round(hourlyData.windSpeed[i]) : "--";
+        const windDir = hourlyData.windDirectionCardinal ? hourlyData.windDirectionCardinal[i] : "";
+
+        const isWet = pop >= 25 || qpf > 0;
+
+        html += `
+          <div class="hourly-chip">
+            <div class="h-time">${hourLabel}</div>
+            <div class="h-icon">${iconEmoji}</div>
+            <div class="h-temp">${temp}°</div>
+            <div class="h-rain-pill ${isWet ? 'wet' : 'dry'}">
+              💧 ${pop}%
+            </div>
+            <div class="h-qpf">${qpf > 0 ? `${qpf.toFixed(1)}mm` : '0 mm'}</div>
+            <div class="h-wind">💨 ${windSpd} ${windDir}</div>
+          </div>
+        `;
+      }
+
+      container.innerHTML = html;
+      updateLifestylePanel(hourlyData, validIndices);
+    }
+
+    function updateLifestylePanel(hourly, validIndices) {
+      if (!hourly) return;
+      const windNow = latestCurrentData && isValid(latestCurrentData.wind) ? Number(latestCurrentData.wind) : 10;
+
+      // 1. Permetezés
+      const sprayVal = document.getElementById('spray-val');
+      const spraySub = document.getElementById('spray-sub');
+      if (sprayVal && spraySub) {
+        if (windNow > 20) {
+          sprayVal.innerText = "Nem ajánlott";
+          sprayVal.style.color = "var(--accent-red)";
+          spraySub.innerText = `Erős szél (${windNow} km/h, elsodródás)`;
+        } else if (windNow > 14) {
+          sprayVal.innerText = "Feltételes";
+          sprayVal.style.color = "var(--accent-yellow)";
+          spraySub.innerText = `Mérsékelt légmozgás (${windNow} km/h)`;
+        } else {
+          sprayVal.innerText = "Kiváló";
+          sprayVal.style.color = "var(--accent-green)";
+          spraySub.innerText = `Csendes szél (${windNow} km/h), nincs sodródás`;
+        }
+      }
+
+      // 2. Autómosás
+      let wetHoursCount = 0;
+      if (hourly.precipChance && validIndices) {
+        for (let k = 0; k < Math.min(24, validIndices.length); k++) {
+          const idx = validIndices[k];
+          if (hourly.precipChance[idx] > 35) wetHoursCount++;
+        }
+      }
+      const carVal = document.getElementById('carwash-val');
+      const carSub = document.getElementById('carwash-sub');
+      if (carVal && carSub) {
+        if (wetHoursCount >= 3) {
+          carVal.innerText = "Nem éri meg";
+          carVal.style.color = "var(--accent-orange)";
+          carSub.innerText = "Hamarosan eső/zápor moshatja össze";
+        } else {
+          carVal.innerText = "Tökéletes";
+          carVal.style.color = "var(--accent-green)";
+          carSub.innerText = "24 órán belül tartósan tiszta marad";
+        }
+      }
+
+      // 3. Teregetés & Szellőztetés
+      const humNow = latestCurrentData && isValid(latestCurrentData.hum) ? Number(latestCurrentData.hum) : 60;
+      const dryVal = document.getElementById('dry-val');
+      const drySub = document.getElementById('dry-sub');
+      if (dryVal && drySub) {
+        if (humNow > 80) {
+          dryVal.innerText = "Lassú száradás";
+          dryVal.style.color = "var(--accent-yellow)";
+          drySub.innerText = `Magas külső pára (${humNow}%)`;
+        } else {
+          dryVal.innerText = "Gyors száradás";
+          dryVal.style.color = "var(--accent-green)";
+          drySub.innerText = `Optimális pára (${humNow}%) & szellő`;
+        }
+      }
+    }
+
     /* 5 Napos Balkányi Előrejelzés (Weather.com) */
     function hydrateForecastFromCache() {
       try {
@@ -1262,10 +2032,10 @@
       } catch (e) {}
     }
 
-    async function fetchForecastIfNeeded() {
+    async function fetchForecastIfNeeded(force = false) {
       try {
         const cached = localStorage.getItem(FC_CACHE_KEY);
-        if (cached) {
+        if (!force && cached) {
           const parsed = JSON.parse(cached);
           if (parsed && parsed.timestamp && (Date.now() - parsed.timestamp < 1200000)) {
             return;
@@ -1417,7 +2187,6 @@
       container.innerHTML = cardsHtml;
     }
 
-    // TŰPONTOS KLIENSOLDALI TMIN/TMAX KINYERŐ (SOHA NEM LESZ N/A!)
     function extractTodayExtremes(data) {
       let maxT = -Infinity, maxTime = "";
       let minT = Infinity, minTime = "";
@@ -1478,8 +2247,8 @@
     }
 
     async function fetchFreshWeather() {
-      if (isFetching) return;
-      isFetching = true;
+      if (isFetchingWeather) return;
+      isFetchingWeather = true;
       const btn = document.getElementById('refresh-btn');
       btn.classList.add('spinning');
 
@@ -1502,16 +2271,18 @@
         document.getElementById('live-indicator').innerText = "KAPCSOLAT HIBA";
         document.getElementById('live-indicator').style.color = "var(--accent-orange)";
       } finally {
-        isFetching = false;
+        isFetchingWeather = false;
         btn.classList.remove('spinning');
       }
 
       fetchForecastIfNeeded();
+      fetchHourlyForecastIfNeeded();
     }
 
     function forceRefresh() {
       fetchFreshWeather();
-      fetchForecastIfNeeded();
+      fetchForecastIfNeeded(true);
+      fetchHourlyForecastIfNeeded(true);
     }
 
     function applyData(data, isFromCache) {
@@ -1525,6 +2296,10 @@
       renderStats(data.stats, latestExtremes);
       renderTableOrList(data.history || []);
       updateWindRoseUI(data.current);
+
+      if (cachedHourlyRaw) {
+        renderHourlyAndNowcast(cachedHourlyRaw);
+      }
 
       if (typeof Chart !== 'undefined') {
         renderChart(data.history || []);
@@ -1547,6 +2322,12 @@
       const absHum = calcAbsoluteHumidity(curr.temp, curr.hum);
       const airDensity = calcAirDensity(curr.bar, curr.temp);
 
+      // ÚJ VALÓS TERMODINAMIKAI PWS SZÁMÍTÁSOK
+      const vpdVal = calcVPD(curr.temp, curr.hum);
+      const wetBulbVal = calcWetBulb(curr.temp, curr.hum);
+      const windForceVal = calcWindPressure(curr.wind, airDensity);
+      const etVal = calcEvapotranspiration(curr.solarrad, curr.temp);
+
       const makeCard = (id, label, valStr, unit = "", color = "#f8fafc", subtext = "") => {
         return `
           <div class="grid-item">
@@ -1561,19 +2342,39 @@
 
       let gridHtml = "";
       gridHtml += makeCard("dew-card", "Harmatpont", fmt(curr.dew), "°C", getTempColor(curr.dew), "Kondenzációs küszöb");
-      gridHtml += makeCard("chill-card", "Hőérzet", fmt(curr.chill), "°C", getTempColor(curr.chill), "Wind Chill");
+      
+      if (wetBulbVal !== null) {
+        gridHtml += makeCard("wb-card", "Nedves Hőm.", wetBulbVal, "°C", getTempColor(wetBulbVal), "Wet Bulb / Fázishatár");
+      } else {
+        gridHtml += makeCard("chill-card", "Hőérzet", fmt(curr.chill), "°C", getTempColor(curr.chill), "Wind Chill");
+      }
+
       gridHtml += makeCard("heat-card", "Hőindex", fmt(curr.heat), "°C", getTempColor(curr.heat), "Heat Index");
       gridHtml += makeCard("bar-card", "Légnyomás", fmt(curr.bar), "hPa", "var(--accent-purple)", "Relatív barométer");
+
+      if (vpdVal !== null) {
+        let vpdColor = "var(--accent-green)";
+        let vpdText = "Optimális zóna";
+        const vpdNum = Number(vpdVal);
+        if (vpdNum < 0.4) { vpdColor = "var(--accent-blue)"; vpdText = "Párás / Gombaveszély"; }
+        else if (vpdNum > 1.4) { vpdColor = "var(--accent-yellow)"; vpdText = "Magas párolgás / Száraz"; }
+        gridHtml += makeCard("vpd-card", "Páradéficit (VPD)", vpdVal, "kPa", vpdColor, vpdText);
+      }
+
+      if (windForceVal !== null) {
+        gridHtml += makeCard("wforce-card", "Szél Torlónyomás", windForceVal, "kg/m²", getWindColor(curr.wind), "Épületre / Fákra mért");
+      }
+
       gridHtml += makeCard("gust-card", "Lökés Csúcs", fmt(curr.gust), "km/h", getWindColor(curr.gust), "Pillanatnyi csúcs");
       gridHtml += makeCard("wdir-card", "Szélirány", `${windDir.text} (${windDir.deg}°)`, arrowHtml, "var(--accent-blue)", `${bft.desc} (Bft ${bft.bft})`);
       
       const luxVal = isValid(curr.solarrad) ? Math.round(Number(curr.solarrad) * 126.7).toLocaleString('hu-HU') + ' Lux' : '';
       gridHtml += makeCard("solar-card", "Napsugárzás", fmt(curr.solarrad, 0), "W/m²", "var(--accent-yellow)", luxVal);
       gridHtml += makeCard("uvi-card", "UV Index", fmt(curr.uvi), "", uvInfo.color, uvInfo.label);
-      gridHtml += makeCard("rain-card", "Napi Csapadék", fmt(curr.rain), "mm", "var(--accent-blue)", "00:00-tól");
+      gridHtml += makeCard("rain-card", "Napi Csapadék", fmt(curr.rain), "mm", "var(--accent-blue)", "00:00-tól mért");
       gridHtml += makeCard("rate-card", "Csapadék Ráta", fmt(curr.rainrate), "mm/h", "var(--accent-blue)", Number(curr.rainrate) > 0 ? "Aktív hullás" : "Száraz idő");
 
-      if (cloudBase !== null) gridHtml += makeCard("cbase-card", "Felhőalap", cloudBase.toLocaleString('hu-HU'), "m", "var(--accent-blue)", "Gomolyképződés");
+      if (cloudBase !== null) gridHtml += makeCard("cbase-card", "Felhőalap (LCL)", cloudBase.toLocaleString('hu-HU'), "m", "var(--accent-blue)", "Gomolyfelhő bázis");
       if (absHum !== null) gridHtml += makeCard("ahum-card", "Abszolút Pára", absHum, "g/m³", "var(--accent-blue)", "Légtér víztartalom");
       if (airDensity !== null) gridHtml += makeCard("adens-card", "Légsűrűség", airDensity, "kg/m³", "#94a3b8", "Barometrikus");
 
@@ -1591,7 +2392,6 @@
           <div style="font-size:9px; font-weight:800; color:${tColor}; letter-spacing:0.8px; text-transform:uppercase;">JELENLEGI HŐMÉRSÉKLET</div>
           <div class="main-temp" style="color:${tColor}; text-shadow: 0 0 25px ${tColor}35;">${fmt(curr.temp)} °C</div>
           
-          <!-- KÉT SOROS MÉRT ÉS ELŐREJELZETT HŐMÉRSÉKLET BLOKK -->
           <div class="hero-extremes-container">
             <div class="hero-extremes-row">
               <div class="extreme-pill" title="Helyi automata által ma mért legmagasabb hőmérséklet">
@@ -1954,13 +2754,16 @@
     }
 
     setInterval(() => {
+      fetchHourlyForecastIfNeeded();
       fetchForecastIfNeeded();
-    }, 300000);
+    }, 600000);
 
     window.addEventListener('DOMContentLoaded', () => {
       calcBalkanySunTimes();
       hydrateFromCache();
+      hydrateHourlyFromCache();
       hydrateForecastFromCache();
+
       fetchFreshWeather();
       scheduleSync();
     });
@@ -1973,6 +2776,7 @@
       if (!document.hidden) {
         fetchFreshWeather();
         fetchForecastIfNeeded();
+        fetchHourlyForecastIfNeeded();
       }
     });
   </script>
