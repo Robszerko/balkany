@@ -209,8 +209,47 @@
       font-size: clamp(42px, 9vw, 58px);
       font-weight: 900;
       line-height: 1.05;
-      margin: 6px 0 4px 0;
+      margin: 4px 0 2px 0;
       letter-spacing: -1px;
+    }
+
+    /* Égkép és Felhőzet Kártya a Hero Szekcióban */
+    .sky-condition-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.035);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 12px;
+      padding: 6px 14px;
+      margin: 6px auto 8px auto;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.05);
+    }
+
+    .sky-icon {
+      font-size: clamp(24px, 4vw, 30px);
+      line-height: 1;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.4));
+    }
+
+    .sky-text-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      gap: 1px;
+    }
+
+    .sky-phrase {
+      font-size: clamp(11.5px, 1.7vw, 13px);
+      font-weight: 800;
+      color: var(--text-bright);
+    }
+
+    .sky-cloud-cover {
+      font-size: clamp(9px, 1.3vw, 10.5px);
+      font-weight: 700;
+      color: var(--accent-cyan);
     }
 
     .hero-extremes-container {
@@ -497,7 +536,6 @@
       word-break: break-word;
     }
 
-    /* Kisméretű Kártyarács */
     .grid-small {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -752,7 +790,7 @@
       align-items: center;
       gap: 3px;
       scroll-snap-align: start;
-      flex: 0 0 clamp(84px, 19vw, 98px);
+      flex: 0 0 clamp(88px, 20vw, 104px);
       transition: all 0.2s ease;
       text-align: center;
     }
@@ -863,7 +901,7 @@
       margin-top: 1px;
     }
 
-    /* 5 Napos Előrejelzés */
+    /* 10 Napos Előrejelzés Görgethető Rendszer */
     .forecast-scroll-wrapper {
       position: relative;
       width: 100%;
@@ -879,26 +917,19 @@
       margin-bottom: 6px;
     }
 
-    @media (min-width: 1025px) {
-      .swipe-hint { display: none; }
-    }
-
     .forecast-track {
       display: flex;
-      gap: 7px;
+      gap: 8px;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
-      padding-bottom: 4px;
+      padding-bottom: 8px;
       -webkit-overflow-scrolling: touch;
     }
 
-    @media (min-width: 1025px) {
-      .forecast-track {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        overflow-x: visible;
-        gap: 8px;
-      }
+    .forecast-track::-webkit-scrollbar { height: 5px; }
+    .forecast-track::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.35);
+      border-radius: 4px;
     }
 
     .forecast-card {
@@ -910,14 +941,8 @@
       flex-direction: column;
       gap: 5px;
       scroll-snap-align: start;
-      flex: 0 0 clamp(160px, 45vw, 185px);
+      flex: 0 0 clamp(155px, 20vw, 185px);
       transition: border-color 0.2s ease, transform 0.2s ease;
-    }
-
-    @media (min-width: 1025px) {
-      .forecast-card {
-        flex: 1 1 0;
-      }
     }
 
     .forecast-card:hover {
@@ -1014,6 +1039,19 @@
 
     .fc-detail-item strong {
       color: var(--text-bright);
+    }
+
+    .fc-sun-footer {
+      font-size: 8px;
+      color: var(--accent-yellow);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 4px;
+      margin-top: 3px;
+      border-top: 1px dashed rgba(255,255,255,0.06);
+      padding-top: 3px;
+      font-weight: 700;
     }
 
     .fc-narrative {
@@ -1219,7 +1257,7 @@
         <div class="location-tag">📍 Balkány, Szabolcs-Szatmár-Bereg • 47.77° É, 21.86° K • Tszf: 142 m</div>
       </div>
       <div class="header-actions">
-        <div class="source-badge" id="source-badge">Weathercloud + TWC Radar</div>
+        <div class="source-badge" id="source-badge">PWS + Valós Modell</div>
         <div class="badge-pill" id="sun-badge">☀️ Nap: --:-- • --:--</div>
         <div class="badge-pill" id="time-top">⏱️ Betöltés...</div>
         <button class="refresh-btn" id="refresh-btn" onclick="forceRefresh()" title="Azonnali frissítés">
@@ -1311,7 +1349,7 @@
                   </div>
                   <div class="wind-mini-box">
                     <div class="wind-mini-lbl">Szenzor Forrás</div>
-                    <div class="wind-mini-val" style="color:var(--accent-blue)">Weathercloud</div>
+                    <div class="wind-mini-val" id="rose-sensor-source" style="color:var(--accent-blue)">Weathercloud</div>
                   </div>
                 </div>
               </div>
@@ -1323,7 +1361,7 @@
       <!-- JOBB OLDAL: ELŐREJELZÉSEK, CSAPADÉK FÓKUSZ, KLÍMA ÉS GRAFIKON -->
       <div>
         
-        <!-- PRÉMIUM CSAPADÉK FÓKUSZ & ÓRÁS IDŐVONAL (SZIGORÚAN JÖVŐBELI ÓRÁK!) -->
+        <!-- PRÉMIUM CSAPADÉK FÓKUSZ & ÓRÁS IDŐVONAL -->
         <div class="precip-focus-card">
           <div class="nowcast-head-flex">
             <div class="nowcast-title">
@@ -1332,7 +1370,7 @@
             <div style="display:flex; align-items:center; gap:6px;">
               <span id="model-bias-badge" class="model-bias-tag">Modell-PWS delta: --</span>
               <div id="hourly-sync-tag" class="badge-pill" style="font-size:8.5px; color:var(--accent-cyan);">
-                ● 10 perces szinkron
+                ● Élő szinkron
               </div>
             </div>
           </div>
@@ -1344,7 +1382,7 @@
                 <div class="dial-lbl">Várható esély</div>
               </div>
               <div class="nowcast-metric-texts">
-                <div class="stat-label" style="font-size:8px; color:var(--accent-blue)" id="nowcast-target-lbl">Következő óra (11:00)</div>
+                <div class="stat-label" style="font-size:8px; color:var(--accent-blue)" id="nowcast-target-lbl">Következő óra</div>
                 <div class="nowcast-big-phrase" id="nowcast-phrase">Elemzés alatt...</div>
                 <div class="nowcast-qpf-tag">
                   <span>🌧️ Várható vízhozam:</span>
@@ -1358,7 +1396,7 @@
                 <span>🎯 METEOROLÓGIAI DIAGNOSZTIKA</span>
               </div>
               <div id="calib-text">
-                A modell lokális csapadék- és konvekciós paramétereinek vizsgálata folyamatban...
+                A valós csapadék- és konvekciós paraméterek vizsgálata folyamatban...
               </div>
             </div>
           </div>
@@ -1369,7 +1407,7 @@
             <span class="timer-bold" id="rain-timer-val">Számítás...</span>
           </div>
 
-          <!-- Részletes Órás Szalag (KIZÁRÓLAG JÖVŐBELI ÓRÁK!) -->
+          <!-- Részletes Órás Szalag (Percre pontos napkelte / napnyugta ikontükrözéssel) -->
           <div class="hourly-track-wrapper">
             <div class="swipe-hint">👉 Lapozz a következő órákért (hőm., csapadék %, szél)</div>
             <div class="hourly-scroll-track" id="hourly-container">
@@ -1388,7 +1426,7 @@
             <div class="life-card">
               <div class="life-lbl">🚜 Permetezés</div>
               <div class="life-val" id="spray-val" style="color:var(--accent-green)">Alkalmas</div>
-              <div class="life-sub" id="spray-sub">Szél < 15 km/h, nincs eső</div>
+              <div class="life-sub" id="spray-sub">Szél &lt; 15 km/h, nincs eső</div>
             </div>
             <div class="life-card">
               <div class="life-lbl">🚗 Autómosás</div>
@@ -1408,18 +1446,18 @@
           </div>
         </div>
 
-        <!-- 5 Napos Balkányi Előrejelzés Kártya -->
+        <!-- 10 Napos Balkányi Előrejelzés Kártya -->
         <div class="card">
           <div class="card-title">
-            <span>📅 5 NAPOS BALKÁNYI KITEKINTÉS (WEATHER.COM)</span>
-            <span id="fc-status-tag" style="font-size:9px; color:var(--accent-blue);">● Naponta többször frissül</span>
+            <span id="fc-main-heading">📅 10 NAPOS BALKÁNYI KITEKINTÉS</span>
+            <span id="fc-status-tag" style="font-size:9px; color:var(--accent-blue);">● Valós idejű szinkron</span>
           </div>
 
           <div class="forecast-scroll-wrapper">
-            <div class="swipe-hint">👉 Lapozz vízszintesen a napokért (5 nap)</div>
+            <div class="swipe-hint">👉 Lapozz vízszintesen a teljes 10 napos idővonalért</div>
             <div class="forecast-track" id="forecast-container">
               <div style="padding:20px; color:var(--text-sub); font-size:11px; text-align:center; width:100%;">
-                Előrejelzés betöltése...
+                10 napos előrejelzés lekérése...
               </div>
             </div>
           </div>
@@ -1445,7 +1483,7 @@
         <div class="card chart-card">
           <div class="card-title">
             <span>📈 MAI HŐMÉRSÉKLET ÉS SZÉL DINAMIKA</span>
-            <span style="font-size:9.5px; color:var(--accent-green);">● Automata szinkron: 10 percenként</span>
+            <span style="font-size:9.5px; color:var(--accent-green);">● Automata szinkron</span>
           </div>
           <div class="chart-container">
             <canvas id="weatherChart"></canvas>
@@ -1488,15 +1526,14 @@
 
   <script>
     const DEPLOY_URL = "https://script.google.com/macros/s/AKfycbyS3GavfF4DpWydvxmCYyD_ylLq9Ypxn2TTRlgbas-vtfmnDcCyCDi6VMiQ5vC2XxDp/exec";
-    const WU_API_KEY = "53b89abc03d14d7ab89abc03d1dd7ab6";
 
-    const CACHE_KEY = "balkany_weather_cache_v2";
-    const FC_CACHE_KEY = "balkany_forecast_cache_v1";
-    const HOURLY_CACHE_KEY = "balkany_hourly_cache_v2";
+    const CACHE_KEY = "balkany_pws_cache_v7";
+    const FC_CACHE_KEY = "balkany_10day_cache_v7";
+    const HOURLY_CACHE_KEY = "balkany_hourly_cache_v7";
 
     let chartInstance = null;
     let isFetchingWeather = false;
-    let isFetchingHourly = false;
+    let isFetchingForecast = false;
     let latestCurrentData = null;
     let latestExtremes = null;
     let cachedHourlyRaw = null;
@@ -1504,10 +1541,21 @@
     let latestFcMax = "--";
     let latestFcMin = "--";
 
+    /* Valós balkányi napkelte-napnyugta tábla */
+    let sunTimesTable = {};
+
+    /* Valós pillanatnyi felhőzet és égkép tároló */
+    let currentSkyCondition = {
+      phrase: "Változóan felhős",
+      emoji: "⛅",
+      cloudCover: 40
+    };
+
     function isValid(val) {
       return val !== undefined && val !== null && val !== "" && val !== "N/A" && !isNaN(Number(val));
     }
 
+    /* PONTOS TIZEDESJEGY FORMÁZÁS */
     function fmt(val, dec = 1) {
       if (!isValid(val)) return "N/A";
       return Number(val).toFixed(dec);
@@ -1545,10 +1593,21 @@
 
     function parseWindDir(wdir) {
       if (!isValid(wdir)) {
-        if (typeof wdir === "string" && wdir.includes("°")) {
+        if (typeof wdir === "string") {
           const match = wdir.match(/([0-9.]+)/);
-          const deg = match ? Number(match[1]) : 0;
-          return { text: wdir.split(' ')[1] ? wdir.split(' ')[1].replace(/[()]/g, '') : "N/A", deg: Math.round(deg), arrow: "↓" };
+          if (match) return parseWindDir(Number(match[1]));
+          const cardMap = {
+            'NORTH': 'É', 'N': 'É', 'NORTH_NORTHEAST': 'ÉÉK', 'NNE': 'ÉÉK',
+            'NORTHEAST': 'ÉK', 'NE': 'ÉK', 'EAST_NORTHEAST': 'KÉK', 'ENE': 'KÉK',
+            'EAST': 'K', 'E': 'K', 'EAST_SOUTHEAST': 'KDK', 'ESE': 'KDK',
+            'SOUTHEAST': 'DK', 'SE': 'DK', 'SOUTH_SOUTHEAST': 'DDK', 'SSE': 'DDK',
+            'SOUTH': 'D', 'S': 'D', 'SOUTH_SOUTHWEST': 'DDNY', 'SSW': 'DDNY',
+            'SOUTHWEST': 'DNY', 'SW': 'DNY', 'WEST_SOUTHWEST': 'NYDNY', 'WSW': 'NYDNY',
+            'WEST': 'NY', 'W': 'NY', 'WEST_NORTHWEST': 'NYÉNY', 'WNW': 'NYÉNY',
+            'NORTHWEST': 'ÉNY', 'NW': 'ÉNY', 'NORTH_NORTHWEST': 'ÉÉNY', 'NNW': 'ÉÉNY'
+          };
+          const clean = wdir.toUpperCase().trim();
+          if (cardMap[clean]) return { text: cardMap[clean], deg: 0, arrow: "↓" };
         }
         return { text: "N/A", deg: 0, arrow: "" };
       }
@@ -1574,7 +1633,6 @@
       return { bft: 10, desc: "Szélvész / Orkán", color: "#ef4444", pct: 100 };
     }
 
-    /* Termodinamikai és fizikai számítások PWS adatokból */
     function calcCloudBase(temp, dew) {
       if (!isValid(temp) || !isValid(dew)) return null;
       const spread = Number(temp) - Number(dew);
@@ -1599,18 +1657,16 @@
       return density.toFixed(3);
     }
 
-    // 100% PONTOS TERMODINAMIKA: Páradéficit (VPD - kPa)
     function calcVPD(temp, hum) {
       if (!isValid(temp) || !isValid(hum)) return null;
       const t = Number(temp);
       const rh = Number(hum);
-      const es = 0.61078 * Math.exp((17.27 * t) / (t + 237.3)); // Telítési gőznyomás (kPa)
-      const ea = es * (rh / 100); // Tényleges gőznyomás
+      const es = 0.61078 * Math.exp((17.27 * t) / (t + 237.3));
+      const ea = es * (rh / 100);
       const vpd = es - ea;
       return vpd.toFixed(2);
     }
 
-    // 100% PONTOS TERMODINAMIKA: Nedves Hőmérséklet (Wet Bulb - Stull formula)
     function calcWetBulb(temp, hum) {
       if (!isValid(temp) || !isValid(hum)) return null;
       const t = Number(temp);
@@ -1623,132 +1679,238 @@
       return tw.toFixed(1);
     }
 
-    // 100% PONTOS MECHANIKA: Szél Dinamikus Nyomása (kg/m² a felületekre)
     function calcWindPressure(windKmh, density) {
       if (!isValid(windKmh)) return null;
-      const v = Number(windKmh) / 3.6; // m/s
-      const rho = density ? Number(density) : 1.225; // kg/m3
-      const q = 0.5 * rho * v * v; // N/m2 (Pascal)
-      const kgM2 = q / 9.81; // kg erő / m2
+      const v = Number(windKmh) / 3.6;
+      const rho = density ? Number(density) : 1.225;
+      const q = 0.5 * rho * v * v;
+      const kgM2 = q / 9.81;
       return kgM2.toFixed(1);
     }
 
-    // Napi becsült párolgási vízveszteség (Evapotranspiráció mm)
-    function calcEvapotranspiration(solarRad, temp) {
-      if (!isValid(solarRad) || !isValid(temp)) return null;
-      const sr = Number(solarRad);
-      const t = Math.max(0, Number(temp));
-      // Becsült órás párolgás Penman-szerű közelítéssel
-      const etHour = (0.00015 * sr * (t + 10)) / 2.45;
-      return etHour.toFixed(2);
+    /* PONTOS NAPKELTE ÉS NAPNYUGTA ELLENŐRZŐ BÁRMELY IDŐPONTRA */
+    function isSunDownAt(dateObj) {
+      if (!dateObj || isNaN(dateObj.getTime())) return false;
+      const yr = dateObj.getFullYear();
+      const mo = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const da = String(dateObj.getDate()).padStart(2, '0');
+      const key = `${yr}-${mo}-${da}`;
+
+      if (sunTimesTable[key]) {
+        const t = dateObj.getTime();
+        return t < sunTimesTable[key].riseEpoch || t >= sunTimesTable[key].setEpoch;
+      }
+
+      // Matematikai fallback az őszi/téli Balkányra (kb. 06:20 - 16:30)
+      const h = dateObj.getHours();
+      return h < 6 || h >= 17;
     }
 
-    function calcBalkanySunTimes() {
-      const now = new Date();
-      const lat = 47.77;
-      const lon = 21.86;
-      const rad = Math.PI / 180;
-
-      const start = new Date(now.getFullYear(), 0, 0);
-      const diff = now - start;
-      const day = Math.floor(diff / 86400000);
-
-      const gamma = 2 * Math.PI / 365 * (day - 1);
-      const decl = 0.006918 - 0.399912 * Math.cos(gamma) + 0.070257 * Math.sin(gamma) - 0.006758 * Math.cos(2 * gamma) + 0.000907 * Math.sin(2 * gamma);
-      const eqtime = 229.18 * (0.000075 + 0.001868 * Math.cos(gamma) - 0.032077 * Math.sin(gamma) - 0.014615 * Math.cos(2 * gamma) - 0.040849 * Math.sin(2 * gamma));
-
-      const zenith = 90.833 * rad;
-      const cosH = (Math.cos(zenith) - Math.sin(lat * rad) * Math.sin(decl)) / (Math.cos(lat * rad) * Math.cos(decl));
-      if (cosH > 1 || cosH < -1) return;
-
-      const H0 = Math.acos(cosH) / rad;
-      const tzOffset = -now.getTimezoneOffset();
-      const noonUTC = 720 - (4 * lon) - eqtime;
-      const riseMin = Math.round(noonUTC - (H0 * 4) + tzOffset);
-      const setMin = Math.round(noonUTC + (H0 * 4) + tzOffset);
-
-      const fmtHM = (m) => {
-        const val = ((m % 1440) + 1440) % 1440;
-        return `${String(Math.floor(val / 60)).padStart(2, '0')}:${String(val % 60).padStart(2, '0')}`;
-      };
-
-      document.getElementById('sun-badge').innerHTML = `🌅 ${fmtHM(riseMin)} • 🌇 ${fmtHM(setMin)}`;
-    }
-
-    function getWeatherIcon(code, isNight = false) {
+    /* Valós WMO kódok szerinti szigorúan szakmai megnevezések (nincs „éjjel” szöveg) */
+    function getWmoWeatherInfo(code, isNight = false) {
       const c = Number(code);
-      if (isNaN(c)) return isNight ? "🌙" : "☀️";
-      if (c === 0 || c === 1 || c === 2) return "🌪️";
-      if (c === 3 || c === 4 || c === 37 || c === 38 || c === 47) return "⛈️";
-      if (c === 5 || c === 6 || c === 7) return "🌨️";
-      if (c === 8 || c === 9 || c === 10) return "🌦️";
-      if (c === 11 || c === 12 || c === 35 || c === 45) return "🌧️";
-      if (c >= 13 && c <= 16) return "❄️";
-      if (c === 17 || c === 18) return "🌧️";
-      if (c >= 19 && c <= 22) return "🌫️";
-      if (c === 23 || c === 24) return "💨";
-      if (c === 26) return "☁️";
-      if (c === 27 || c === 28) return "🌥️";
-      if (c === 29 || c === 30) return isNight ? "☁️" : "⛅";
-      if (c === 31) return "🌙";
-      if (c === 32) return "☀️";
-      if (c === 33 || c === 34) return isNight ? "🌤️" : "🌤️";
-      if (c === 36) return "☀️";
-      if (c === 39 || c === 40) return "🌦️";
-      if (c >= 41 && c <= 43) return "🌨️";
-      return isNight ? "🌙" : "⛅";
+      switch (c) {
+        case 0: 
+          return { phrase: "Tiszta, derült égbolt", emoji: isNight ? "🌙" : "☀️" };
+        case 1: 
+          return { phrase: "Túlnyomóan derült", emoji: isNight ? "🌙" : "🌤️" };
+        case 2: 
+          return { phrase: "Részben felhős", emoji: isNight ? "☁️" : "⛅" };
+        case 3: 
+          return { phrase: "Borult égbolt", emoji: "☁️" };
+        case 45: 
+          return { phrase: "Ködös idő", emoji: "🌫️" };
+        case 48: 
+          return { phrase: "Zúzmarás köd", emoji: "🌫️" };
+        case 51: 
+          return { phrase: "Gyenge szitálás", emoji: isNight ? "🌧️" : "🌦️" };
+        case 53: 
+          return { phrase: "Mérsékelt szitálás", emoji: isNight ? "🌧️" : "🌦️" };
+        case 55: 
+          return { phrase: "Sűrű szitálás", emoji: isNight ? "🌧️" : "🌦️" };
+        case 56: case 57: 
+          return { phrase: "Ónos szitálás", emoji: "🌨️" };
+        case 61: 
+          return { phrase: "Gyenge esőzés", emoji: isNight ? "🌧️" : "🌦️" };
+        case 63: 
+          return { phrase: "Mérsékelt eső", emoji: "🌧️" };
+        case 65: 
+          return { phrase: "Heves esőzés", emoji: "🌧️" };
+        case 66: case 67: 
+          return { phrase: "Ónos eső", emoji: "🌨️" };
+        case 71: 
+          return { phrase: "Gyenge havazás", emoji: "❄️" };
+        case 73: 
+          return { phrase: "Mérsékelt havazás", emoji: "❄️" };
+        case 75: 
+          return { phrase: "Erős havazás", emoji: "❄️" };
+        case 77: 
+          return { phrase: "Hódara", emoji: "❄️" };
+        case 80: 
+          return { phrase: "Futó záporeső", emoji: isNight ? "🌧️" : "🌦️" };
+        case 81: 
+          return { phrase: "Záporeső", emoji: isNight ? "🌧️" : "🌦️" };
+        case 82: 
+          return { phrase: "Heves felhőszakadás", emoji: "🌧️" };
+        case 85: case 86: 
+          return { phrase: "Hózápor", emoji: "🌨️" };
+        case 95: 
+          return { phrase: "Zivatar", emoji: "⛈️" };
+        case 96: case 99: 
+          return { phrase: "Zivatar jégesővel", emoji: "⛈️" };
+        default: 
+          return { phrase: "Változóan felhős", emoji: isNight ? "🌙" : "⛅" };
+      }
     }
 
     /* ============================================================ */
-    /* WEATHER.COM ÓRÁS ELŐREJELZÉS & DIAGNOSZTIKA                  */
+    /* ULTRA-GYORS EGYESÍTETT 10 NAPOS ÉS ÓRÁS ELŐREJELZŐ MOTOR     */
     /* ============================================================ */
-    function hydrateHourlyFromCache() {
-      try {
-        const cached = localStorage.getItem(HOURLY_CACHE_KEY);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed && parsed.data) {
-            cachedHourlyRaw = parsed.data;
-            renderHourlyAndNowcast(parsed.data);
-          }
-        }
-      } catch(e) {}
-    }
+    async function fetchCompleteForecast(force = true) {
+      if (isFetchingForecast) return;
+      isFetchingForecast = true;
 
-    async function fetchHourlyForecastIfNeeded(force = false) {
-      if (isFetchingHourly) return;
       try {
-        const cached = localStorage.getItem(HOURLY_CACHE_KEY);
-        if (!force && cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed && parsed.timestamp && (Date.now() - parsed.timestamp < 600000)) {
-            return;
-          }
-        }
-
-        isFetchingHourly = true;
-        const hourlyUrl = `https://api.weather.com/v3/wx/forecast/hourly/2day?geocode=47.77,21.86&format=json&units=m&language=hu-HU&apiKey=${WU_API_KEY}`;
-        const res = await fetch(hourlyUrl);
-        if (!res.ok) throw new Error("Hourly fetch hiba: " + res.status);
+        const unifiedUrl = `https://api.open-meteo.com/v1/forecast?latitude=47.77&longitude=21.86&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,is_day&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,wind_direction_10m_dominant,sunrise,sunset&forecast_days=10&timezone=auto`;
+        
+        const res = await fetch(unifiedUrl);
+        if (!res.ok) throw new Error("Gyors modell hiba: " + res.status);
         const data = await res.json();
 
-        if (data && data.validTimeLocal && data.validTimeLocal.length > 0) {
-          cachedHourlyRaw = data;
-          try {
-            localStorage.setItem(HOURLY_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
-          } catch(e) {}
-          renderHourlyAndNowcast(data);
-          const syncTag = document.getElementById('hourly-sync-tag');
-          if (syncTag) {
-            const now = new Date();
-            syncTag.innerHTML = `● Szinkron: ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        // 1. Valós napkelte-napnyugta percre pontos feltérképezése
+        if (data.daily && data.daily.sunrise && data.daily.sunset) {
+          for (let i = 0; i < data.daily.time.length; i++) {
+            const dayKey = data.daily.time[i];
+            const rDate = new Date(data.daily.sunrise[i]);
+            const sDate = new Date(data.daily.sunset[i]);
+            sunTimesTable[dayKey] = {
+              riseEpoch: rDate.getTime(),
+              setEpoch: sDate.getTime(),
+              riseStr: `${String(rDate.getHours()).padStart(2, '0')}:${String(rDate.getMinutes()).padStart(2, '0')}`,
+              setStr: `${String(sDate.getHours()).padStart(2, '0')}:${String(sDate.getMinutes()).padStart(2, '0')}`
+            };
+          }
+
+          // Ma érvényes napkelte/napnyugta kiírása a fejlécben
+          const today = new Date();
+          const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+          if (sunTimesTable[todayKey]) {
+            document.getElementById('sun-badge').innerHTML = `🌅 ${sunTimesTable[todayKey].riseStr} • 🌇 ${sunTimesTable[todayKey].setStr}`;
           }
         }
+
+        // 2. Valós aktuális égkép és felhőborítottság frissítése (is_day alapján)
+        if (data.current) {
+          const now = new Date();
+          const isNightNow = (data.current.is_day !== undefined) ? (data.current.is_day === 0) : isSunDownAt(now);
+          const curW = getWmoWeatherInfo(data.current.weather_code, isNightNow);
+          currentSkyCondition = {
+            phrase: curW.phrase,
+            emoji: curW.emoji,
+            cloudCover: data.current.cloud_cover !== undefined ? data.current.cloud_cover : 0
+          };
+          updateHeroSkyDisplay();
+
+          // Ha a PWS offline, azonnal átadjuk a valós modellezett élő méréseket
+          if (!latestCurrentData || latestCurrentData.isFallback) {
+            applyFallbackCurrentData(data.current);
+          }
+        }
+
+        // 3. Valós Órás Idővonal feldolgozása (Szigorúan az adott óra is_day értéke szerint!)
+        if (data.hourly && data.hourly.time) {
+          const hourlyList = [];
+          const times = data.hourly.time;
+          for (let i = 0; i < times.length; i++) {
+            const d = new Date(times[i]);
+            const isNightHour = (data.hourly.is_day && data.hourly.is_day[i] !== undefined)
+              ? (data.hourly.is_day[i] === 0)
+              : isSunDownAt(d);
+
+            const wInfo = getWmoWeatherInfo(data.hourly.weather_code[i], isNightHour);
+            const deg = data.hourly.wind_direction_10m[i];
+
+            hourlyList.push({
+              date: d,
+              epoch: d.getTime(),
+              temp: data.hourly.temperature_2m[i],
+              pop: data.hourly.precipitation_probability[i] || 0,
+              qpf: data.hourly.precipitation[i] || 0,
+              phrase: wInfo.phrase,
+              windSpeed: data.hourly.wind_speed_10m[i] || 0,
+              windCard: parseWindDir(deg).text,
+              isNight: isNightHour,
+              emoji: wInfo.emoji,
+              cloudCover: data.hourly.cloud_cover[i] || 0
+            });
+          }
+
+          cachedHourlyRaw = hourlyList;
+          try {
+            localStorage.setItem(HOURLY_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: hourlyList }));
+          } catch(e) {}
+          renderUnifiedHourly(hourlyList);
+        }
+
+        // 4. Valós 10 Napos Előrejelzés feldolgozása
+        if (data.daily && data.daily.time) {
+          const fcList = [];
+          const daysOfWeekHu = ['VASÁRNAP', 'HÉTFŐ', 'KEDD', 'SZERDA', 'CSÜTÖRTÖK', 'PÉNTEK', 'SZOMBAT'];
+          const count = Math.min(10, data.daily.time.length);
+
+          for (let i = 0; i < count; i++) {
+            const dt = new Date(data.daily.time[i]);
+            const dayKey = data.daily.time[i];
+            const wInfo = getWmoWeatherInfo(data.daily.weather_code[i], false);
+            const deg = data.daily.wind_direction_10m_dominant[i];
+
+            const riseTxt = sunTimesTable[dayKey] ? sunTimesTable[dayKey].riseStr : "--:--";
+            const setTxt = sunTimesTable[dayKey] ? sunTimesTable[dayKey].setStr : "--:--";
+
+            fcList.push({
+              dayName: i === 0 ? "MA" : daysOfWeekHu[dt.getDay()],
+              dateStr: `${String(dt.getMonth() + 1).padStart(2, '0')}.${String(dt.getDate()).padStart(2, '0')}.`,
+              tMax: isValid(data.daily.temperature_2m_max[i]) ? fmt(data.daily.temperature_2m_max[i], 1) + "°" : "--",
+              tMin: isValid(data.daily.temperature_2m_min[i]) ? fmt(data.daily.temperature_2m_min[i], 1) + "°" : "--",
+              phrase: wInfo.phrase,
+              pop: data.daily.precipitation_probability_max[i] || 0,
+              qpf: data.daily.precipitation_sum[i] || 0,
+              windSpd: fmt(data.daily.wind_speed_10m_max[i], 1),
+              windDir: parseWindDir(deg).text,
+              hum: 65,
+              emoji: wInfo.emoji,
+              sunrise: riseTxt,
+              sunset: setTxt,
+              narrative: `${wInfo.phrase}, csúcs: ${fmt(data.daily.temperature_2m_max[i], 1)} °C`
+            });
+          }
+
+          try {
+            localStorage.setItem(FC_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: fcList }));
+          } catch(e) {}
+          renderUnifiedForecast(fcList);
+        }
+
+        const syncTag = document.getElementById('hourly-sync-tag');
+        if (syncTag) {
+          const now = new Date();
+          syncTag.innerHTML = `● Szinkron: ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        }
       } catch (err) {
-        console.warn("Balkány órás lekérési hiba:", err);
+        console.error("Valós előrejelzés lekérési hiba:", err);
       } finally {
-        isFetchingHourly = false;
+        isFetchingForecast = false;
       }
+    }
+
+    function updateHeroSkyDisplay() {
+      const heroIconEl = document.getElementById('hero-sky-icon');
+      const heroPhraseEl = document.getElementById('hero-sky-phrase');
+      const heroCloudEl = document.getElementById('hero-cloud-cover');
+
+      if (heroIconEl) heroIconEl.innerText = currentSkyCondition.emoji;
+      if (heroPhraseEl) heroPhraseEl.innerText = currentSkyCondition.phrase;
+      if (heroCloudEl) heroCloudEl.innerHTML = `☁️ Felhőzet: <strong>${fmt(currentSkyCondition.cloudCover, 0)}%</strong>`;
     }
 
     function evaluatePrecipType(phrase, pop, qpf) {
@@ -1765,13 +1927,13 @@
         };
       }
 
-      const isShowerMentioned = p.includes("zápor") || p.includes("zivatar") || p.includes("shower");
+      const isShower = p.includes("zápor") || p.includes("zivatar") || p.includes("shower");
 
-      if (isShowerMentioned && rainAmount < 0.6) {
+      if (isShower && rainAmount < 0.6) {
         return {
           refinedPhrase: prob > 40 ? "Futó csepergés / gyenge szitálás" : "Kevés esélyű elszórt csepergés",
           statusColor: "var(--accent-yellow)",
-          note: "A modell konvektív záport feltételez, de a várt lokális vízmennyiség minimális (<0.6 mm). A valóságban legfeljebb pár kósza csepp, futó szitálás vagy száraz felhőátvonulás várható!",
+          note: "A modell konvektív felhőzetet jelez, minimális lokális csapadékkal (<0.6 mm). Legfeljebb pár kósza csepp várható!",
           isWet: true
         };
       }
@@ -1787,9 +1949,9 @@
 
       if (rainAmount >= 0.8 && rainAmount < 4.0) {
         return {
-          refinedPhrase: isShowerMentioned ? "Mérhető helyi záporeső" : "Mérsékelt, áztató eső",
+          refinedPhrase: isShower ? "Mérhető helyi záporeső" : "Mérsékelt, áztató eső",
           statusColor: "var(--accent-blue)",
-          note: "Kifejezett csapadékképződés, mérhető esőzés (több milliméter várt csapadékösszeg).",
+          note: "Kifejezett csapadékképződés, mérhető esőzés.",
           isWet: true
         };
       }
@@ -1804,41 +1966,42 @@
       }
 
       return {
-        refinedPhrase: phrase || "Változó csapadékhajlam",
+        refinedPhrase: phrase || "Változóan felhős",
         statusColor: prob > 40 ? "var(--accent-blue)" : "var(--text-sub)",
-        note: `Modell becslés: ${prob}% esély, ${rainAmount.toFixed(1)} mm várható összeg.`,
+        note: `Valós előrejelzés: ${prob}% esély, ${fmt(rainAmount, 1)} mm várható összeg.`,
         isWet: prob > 30
       };
     }
 
-    // TŰPONTOS ÓRÁS SZŰRŐ ÉS MEGJELENÍTŐ (11:00 MEGJELENÉS JAVÍTVA!)
-    function renderHourlyAndNowcast(hourlyData) {
-      if (!hourlyData || !hourlyData.validTimeLocal) return;
-
-      const totalItems = hourlyData.validTimeLocal.length;
-      if (totalItems === 0) return;
-
+    function renderUnifiedHourly(list) {
+      if (!list || list.length === 0) return;
       const now = new Date();
       const currentEpoch = now.getTime();
 
-      // KERESSÜK KI AZ ÖSSZES VALÓBAN JÖVŐBELI ÓRÁT!
       const futureIndices = [];
-      for (let i = 0; i < totalItems; i++) {
-        const itemDate = new Date(hourlyData.validTimeLocal[i]);
-        // Ha az adott óra időbélyege a jelenlegi pillanat után van (pl. 11:00:00 > 10:19:xx)
+      for (let i = 0; i < list.length; i++) {
+        const itemDate = new Date(list[i].epoch || list[i].date);
         if (itemDate.getTime() > currentEpoch) {
           futureIndices.push(i);
         }
       }
 
-      // Ha esetleg a legelső elem pont az aktuális óra és nincs jövőbeli, fallback
       const validIndices = futureIndices.length > 0 ? futureIndices : [0];
       const nextHourIdx = validIndices[0];
+      const nextItem = list[nextHourIdx];
 
-      // Kinyerjük a legközelebbi óra címkéjét (pl. 11:00)
+      if (nextItem) {
+        currentSkyCondition = {
+          phrase: nextItem.phrase,
+          emoji: nextItem.emoji,
+          cloudCover: nextItem.cloudCover !== undefined ? nextItem.cloudCover : currentSkyCondition.cloudCover
+        };
+        updateHeroSkyDisplay();
+      }
+
       let nextHourLabelStr = "Következő óra";
-      if (hourlyData.validTimeLocal[nextHourIdx]) {
-        const dNext = new Date(hourlyData.validTimeLocal[nextHourIdx]);
+      if (nextItem && nextItem.date) {
+        const dNext = new Date(nextItem.date);
         if (!isNaN(dNext.getTime())) {
           nextHourLabelStr = `Következő óra (${String(dNext.getHours()).padStart(2, '0')}:00)`;
         }
@@ -1846,12 +2009,7 @@
       const targetLblEl = document.getElementById('nowcast-target-lbl');
       if (targetLblEl) targetLblEl.innerText = nextHourLabelStr;
 
-      // 1. KÖVETKEZŐ ÓRA (11:00) NOWCAST BLOKK
-      const nextHourPop = hourlyData.precipChance ? (hourlyData.precipChance[nextHourIdx] || 0) : 0;
-      const nextHourQpf = hourlyData.qpf ? (Number(hourlyData.qpf[nextHourIdx]) || 0) : 0;
-      const nextHourPhrase = hourlyData.wxPhraseLong ? hourlyData.wxPhraseLong[nextHourIdx] : "Változó idő";
-
-      const analysis = evaluatePrecipType(nextHourPhrase, nextHourPop, nextHourQpf);
+      const analysis = evaluatePrecipType(nextItem.phrase, nextItem.pop, nextItem.qpf);
 
       const nowcastPctEl = document.getElementById('nowcast-pct');
       const nowcastPhraseEl = document.getElementById('nowcast-phrase');
@@ -1859,7 +2017,7 @@
       const calibTextEl = document.getElementById('calib-text');
 
       if (nowcastPctEl) {
-        nowcastPctEl.innerText = `${nextHourPop}%`;
+        nowcastPctEl.innerText = `${nextItem.pop}%`;
         nowcastPctEl.style.color = analysis.statusColor;
       }
       if (nowcastPhraseEl) {
@@ -1867,49 +2025,39 @@
         nowcastPhraseEl.style.color = analysis.statusColor;
       }
       if (nowcastQpfEl) {
-        nowcastQpfEl.innerText = `${nextHourQpf.toFixed(1)} mm`;
+        nowcastQpfEl.innerText = `${fmt(nextItem.qpf, 1)} mm`;
       }
       if (calibTextEl) {
         calibTextEl.innerHTML = analysis.note;
       }
 
-      // 2. KÖVETKEZŐ ESŐ IDŐZÍTŐ
       let nextRainText = "A következő 24 órában nem várható eső";
       for (let k = 0; k < Math.min(24, validIndices.length); k++) {
         const idx = validIndices[k];
-        const pop = hourlyData.precipChance ? (hourlyData.precipChance[idx] || 0) : 0;
-        const qpf = hourlyData.qpf ? (Number(hourlyData.qpf[idx]) || 0) : 0;
-        if (pop >= 40 || qpf >= 0.3) {
-          const rDate = new Date(hourlyData.validTimeLocal[idx]);
+        const it = list[idx];
+        if (it.pop >= 40 || it.qpf >= 0.3) {
+          const rDate = new Date(it.date);
           const hStr = `${String(rDate.getHours()).padStart(2, '0')}:00`;
           const isTomorrow = rDate.getDate() !== now.getDate();
-          nextRainText = `${isTomorrow ? 'Holnap' : 'Ma'} ${hStr} körül (~${qpf.toFixed(1)} mm, ${pop}%)`;
+          nextRainText = `${isTomorrow ? 'Holnap' : 'Ma'} ${hStr} körül (~${fmt(it.qpf, 1)} mm, ${it.pop}%)`;
           break;
         }
       }
       const timerValEl = document.getElementById('rain-timer-val');
       if (timerValEl) timerValEl.innerText = nextRainText;
 
-      // 3. PWS vs MODELL DELTA KALIBRÁCIÓ
-      if (latestCurrentData && isValid(latestCurrentData.temp) && hourlyData.temperature && isValid(hourlyData.temperature[0])) {
-        const modelTemp = Number(hourlyData.temperature[0]);
+      if (latestCurrentData && isValid(latestCurrentData.temp) && nextItem && isValid(nextItem.temp)) {
+        const modelTemp = Number(nextItem.temp);
         const pwsTemp = Number(latestCurrentData.temp);
         const diff = (pwsTemp - modelTemp).toFixed(1);
         const diffSign = diff > 0 ? `+${diff}` : diff;
         const biasBadge = document.getElementById('model-bias-badge');
         if (biasBadge) {
-          biasBadge.innerText = `PWS vs Modell: ${diffSign} °C eltérés`;
-          if (Math.abs(diff) <= 0.8) {
-            biasBadge.style.color = "var(--accent-green)";
-            biasBadge.style.borderColor = "rgba(52, 211, 153, 0.3)";
-          } else {
-            biasBadge.style.color = "var(--accent-yellow)";
-            biasBadge.style.borderColor = "rgba(250, 204, 21, 0.3)";
-          }
+          biasBadge.innerText = `PWS vs Modell: ${diffSign} °C`;
+          biasBadge.style.color = Math.abs(diff) <= 0.8 ? "var(--accent-green)" : "var(--accent-yellow)";
         }
       }
 
-      // 4. ÓRÁNKÉNTI CHIP IDŐVONAL (Garantáltan a 11:00-tól indul!)
       const maxDisplayHours = 18;
       const container = document.getElementById('hourly-container');
       if (!container) return;
@@ -1917,75 +2065,57 @@
       let html = "";
       for (let k = 0; k < Math.min(maxDisplayHours, validIndices.length); k++) {
         const i = validIndices[k];
-        const timeStr = hourlyData.validTimeLocal[i];
-        let hourLabel = "--:--";
-        let isNight = false;
-        if (timeStr) {
-          const d = new Date(timeStr);
-          if (!isNaN(d.getTime())) {
-            const h = d.getHours();
-            hourLabel = `${String(h).padStart(2, '0')}:00`;
-            if (h < 6 || h >= 20) isNight = true;
-          }
-        }
-
-        const iconCode = hourlyData.iconCode ? hourlyData.iconCode[i] : 30;
-        const iconEmoji = getWeatherIcon(iconCode, isNight);
-        const temp = isValid(hourlyData.temperature[i]) ? Math.round(hourlyData.temperature[i]) : "--";
-        const pop = hourlyData.precipChance ? (hourlyData.precipChance[i] || 0) : 0;
-        const qpf = hourlyData.qpf ? (Number(hourlyData.qpf[i]) || 0) : 0;
-        const windSpd = isValid(hourlyData.windSpeed[i]) ? Math.round(hourlyData.windSpeed[i]) : "--";
-        const windDir = hourlyData.windDirectionCardinal ? hourlyData.windDirectionCardinal[i] : "";
-
-        const isWet = pop >= 25 || qpf > 0;
+        const it = list[i];
+        const d = new Date(it.date);
+        const hourLabel = `${String(d.getHours()).padStart(2, '0')}:00`;
+        const temp = fmt(it.temp, 1);
+        const isWet = it.pop >= 25 || it.qpf > 0;
 
         html += `
           <div class="hourly-chip">
             <div class="h-time">${hourLabel}</div>
-            <div class="h-icon">${iconEmoji}</div>
+            <div class="h-icon">${it.emoji}</div>
             <div class="h-temp">${temp}°</div>
             <div class="h-rain-pill ${isWet ? 'wet' : 'dry'}">
-              💧 ${pop}%
+              💧 ${it.pop}%
             </div>
-            <div class="h-qpf">${qpf > 0 ? `${qpf.toFixed(1)}mm` : '0 mm'}</div>
-            <div class="h-wind">💨 ${windSpd} ${windDir}</div>
+            <div class="h-qpf">${Number(it.qpf) > 0 ? `${fmt(it.qpf, 1)}mm` : '0.0 mm'}</div>
+            <div class="h-wind">💨 ${fmt(it.windSpeed, 1)} ${it.windCard}</div>
           </div>
         `;
       }
 
       container.innerHTML = html;
-      updateLifestylePanel(hourlyData, validIndices);
+      updateLifestylePanel(list, validIndices);
     }
 
-    function updateLifestylePanel(hourly, validIndices) {
-      if (!hourly) return;
+    function updateLifestylePanel(hourlyList, validIndices) {
+      if (!hourlyList) return;
       const windNow = latestCurrentData && isValid(latestCurrentData.wind) ? Number(latestCurrentData.wind) : 10;
 
-      // 1. Permetezés
       const sprayVal = document.getElementById('spray-val');
       const spraySub = document.getElementById('spray-sub');
       if (sprayVal && spraySub) {
         if (windNow > 20) {
           sprayVal.innerText = "Nem ajánlott";
           sprayVal.style.color = "var(--accent-red)";
-          spraySub.innerText = `Erős szél (${windNow} km/h, elsodródás)`;
+          spraySub.innerText = `Erős szél (${fmt(windNow, 1)} km/h, elsodródás)`;
         } else if (windNow > 14) {
           sprayVal.innerText = "Feltételes";
           sprayVal.style.color = "var(--accent-yellow)";
-          spraySub.innerText = `Mérsékelt légmozgás (${windNow} km/h)`;
+          spraySub.innerText = `Mérsékelt légmozgás (${fmt(windNow, 1)} km/h)`;
         } else {
           sprayVal.innerText = "Kiváló";
           sprayVal.style.color = "var(--accent-green)";
-          spraySub.innerText = `Csendes szél (${windNow} km/h), nincs sodródás`;
+          spraySub.innerText = `Csendes szél (${fmt(windNow, 1)} km/h)`;
         }
       }
 
-      // 2. Autómosás
       let wetHoursCount = 0;
-      if (hourly.precipChance && validIndices) {
+      if (validIndices) {
         for (let k = 0; k < Math.min(24, validIndices.length); k++) {
           const idx = validIndices[k];
-          if (hourly.precipChance[idx] > 35) wetHoursCount++;
+          if (hourlyList[idx] && hourlyList[idx].pop > 35) wetHoursCount++;
         }
       }
       const carVal = document.getElementById('carwash-val');
@@ -1994,15 +2124,14 @@
         if (wetHoursCount >= 3) {
           carVal.innerText = "Nem éri meg";
           carVal.style.color = "var(--accent-orange)";
-          carSub.innerText = "Hamarosan eső/zápor moshatja össze";
+          carSub.innerText = "Hamarosan eső/zápor lehetséges";
         } else {
           carVal.innerText = "Tökéletes";
           carVal.style.color = "var(--accent-green)";
-          carSub.innerText = "24 órán belül tartósan tiszta marad";
+          carSub.innerText = "24 órán belül tiszta maradhat";
         }
       }
 
-      // 3. Teregetés & Szellőztetés
       const humNow = latestCurrentData && isValid(latestCurrentData.hum) ? Number(latestCurrentData.hum) : 60;
       const dryVal = document.getElementById('dry-val');
       const drySub = document.getElementById('dry-sub');
@@ -2010,179 +2139,70 @@
         if (humNow > 80) {
           dryVal.innerText = "Lassú száradás";
           dryVal.style.color = "var(--accent-yellow)";
-          drySub.innerText = `Magas külső pára (${humNow}%)`;
+          drySub.innerText = `Magas külső pára (${fmt(humNow, 0)}%)`;
         } else {
           dryVal.innerText = "Gyors száradás";
           dryVal.style.color = "var(--accent-green)";
-          drySub.innerText = `Optimális pára (${humNow}%) & szellő`;
+          drySub.innerText = `Optimális pára (${fmt(humNow, 0)}%)`;
         }
       }
     }
 
-    /* 5 Napos Balkányi Előrejelzés (Weather.com) */
-    function hydrateForecastFromCache() {
-      try {
-        const cached = localStorage.getItem(FC_CACHE_KEY);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed && parsed.data) {
-            renderForecast(parsed.data);
-          }
-        }
-      } catch (e) {}
-    }
-
-    async function fetchForecastIfNeeded(force = false) {
-      try {
-        const cached = localStorage.getItem(FC_CACHE_KEY);
-        if (!force && cached) {
-          const parsed = JSON.parse(cached);
-          if (parsed && parsed.timestamp && (Date.now() - parsed.timestamp < 1200000)) {
-            return;
-          }
-        }
-
-        const fcUrl = `https://api.weather.com/v3/wx/forecast/daily/5day?geocode=47.77,21.86&format=json&units=m&language=hu-HU&apiKey=${WU_API_KEY}`;
-        const res = await fetch(fcUrl);
-        if (!res.ok) throw new Error("Forecast fetch hiba: " + res.status);
-        const data = await res.json();
-
-        if (data && data.dayOfWeek && data.dayOfWeek.length > 0) {
-          try {
-            localStorage.setItem(FC_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
-          } catch(e) {}
-          renderForecast(data);
-        }
-      } catch (err) {
-        console.warn("Balkány előrejelzés lekérési hiba:", err);
-      }
-    }
-
-    function renderForecast(fc) {
+    function renderUnifiedForecast(days) {
       const container = document.getElementById('forecast-container');
-      if (!container || !fc || !fc.dayOfWeek) return;
+      if (!container || !days || days.length === 0) return;
 
-      const dp = fc.daypart && fc.daypart[0] ? fc.daypart[0] : null;
+      if (days[0]) {
+        latestFcMax = days[0].tMax;
+        latestFcMin = days[0].tMin;
+        const heroFcMaxEl = document.getElementById('hero-fc-max');
+        const heroFcMinEl = document.getElementById('hero-fc-min');
+        if (heroFcMaxEl) heroFcMaxEl.innerText = latestFcMax;
+        if (heroFcMinEl) heroFcMinEl.innerText = latestFcMin;
+      }
+
       let cardsHtml = "";
-      const totalDays = Math.min(5, fc.dayOfWeek.length);
-
-      let todayFcMax = "--";
-      let todayFcMin = "--";
-
-      if (fc.temperatureMax && fc.temperatureMax.length > 0 && isValid(fc.temperatureMax[0])) {
-        todayFcMax = `${Math.round(fc.temperatureMax[0])} °C`;
-      } else if (dp && dp.temperature && isValid(dp.temperature[0])) {
-        todayFcMax = `${Math.round(dp.temperature[0])} °C`;
-      }
-
-      if (fc.temperatureMin && fc.temperatureMin.length > 0 && isValid(fc.temperatureMin[0])) {
-        todayFcMin = `${Math.round(fc.temperatureMin[0])} °C`;
-      } else if (dp && dp.temperature && isValid(dp.temperature[1])) {
-        todayFcMin = `${Math.round(dp.temperature[1])} °C`;
-      }
-
-      latestFcMax = todayFcMax;
-      latestFcMin = todayFcMin;
-
-      const heroFcMaxEl = document.getElementById('hero-fc-max');
-      const heroFcMinEl = document.getElementById('hero-fc-min');
-      if (heroFcMaxEl) heroFcMaxEl.innerText = latestFcMax;
-      if (heroFcMinEl) heroFcMinEl.innerText = latestFcMin;
-
-      for (let i = 0; i < totalDays; i++) {
-        const dayName = i === 0 ? "MA" : (fc.dayOfWeek[i] || "").toUpperCase();
-        
-        let dateStr = "";
-        if (fc.validTimeLocal && fc.validTimeLocal[i]) {
-          const dt = new Date(fc.validTimeLocal[i]);
-          if (!isNaN(dt.getTime())) {
-            dateStr = `${String(dt.getMonth() + 1).padStart(2, '0')}.${String(dt.getDate()).padStart(2, '0')}.`;
-          }
-        }
-
-        const tMax = isValid(fc.temperatureMax[i]) ? `${Math.round(fc.temperatureMax[i])}°` : "--";
-        const tMin = isValid(fc.temperatureMin[i]) ? `${Math.round(fc.temperatureMin[i])}°` : "--";
-
-        let dayPartIdx = i * 2;
-        let nightPartIdx = i * 2 + 1;
-
-        let iconCode = 30;
-        let phrase = "Változóan felhős";
-        let precipChance = 0;
-        let qpf = 0;
-        let windSpd = 0;
-        let windDirCard = "ÉK";
-        let hum = 60;
-        let isNightPrimary = false;
-
-        if (dp) {
-          if (dp.dayOrNight && dp.dayOrNight[dayPartIdx] === null) {
-            dayPartIdx = nightPartIdx;
-            isNightPrimary = true;
-          }
-
-          if (dp.iconCode && dp.iconCode[dayPartIdx] !== null) {
-            iconCode = dp.iconCode[dayPartIdx];
-          }
-          if (dp.wxPhraseLong && dp.wxPhraseLong[dayPartIdx]) {
-            phrase = dp.wxPhraseLong[dayPartIdx];
-          }
-          if (dp.precipChance && dp.precipChance[dayPartIdx] !== null) {
-            precipChance = dp.precipChance[dayPartIdx];
-          }
-          if (dp.qpf && dp.qpf[dayPartIdx] !== null) {
-            qpf = dp.qpf[dayPartIdx];
-          }
-          if (dp.windSpeed && dp.windSpeed[dayPartIdx] !== null) {
-            windSpd = dp.windSpeed[dayPartIdx];
-          }
-          if (dp.windDirectionCardinal && dp.windDirectionCardinal[dayPartIdx]) {
-            windDirCard = dp.windDirectionCardinal[dayPartIdx];
-          }
-          if (dp.relativeHumidity && dp.relativeHumidity[dayPartIdx] !== null) {
-            hum = dp.relativeHumidity[dayPartIdx];
-          }
-        }
-
-        const iconEmoji = getWeatherIcon(iconCode, isNightPrimary);
-        const narrative = fc.narrative && fc.narrative[i] ? fc.narrative[i] : "";
-
+      days.forEach(item => {
         cardsHtml += `
           <div class="forecast-card">
             <div class="fc-header">
-              <span class="fc-day-name">${dayName}</span>
-              <span class="fc-date">${dateStr}</span>
+              <span class="fc-day-name">${item.dayName}</span>
+              <span class="fc-date">${item.dateStr}</span>
             </div>
 
             <div class="fc-body">
-              <div class="fc-icon">${iconEmoji}</div>
+              <div class="fc-icon">${item.emoji}</div>
               <div class="fc-temps">
-                <span class="fc-tmax">${tMax}</span>
-                <span class="fc-tmin">${tMin}</span>
+                <span class="fc-tmax">${item.tMax}</span>
+                <span class="fc-tmin">${item.tMin}</span>
               </div>
             </div>
 
-            <div class="fc-phrase">${phrase}</div>
+            <div class="fc-phrase">${item.phrase}</div>
 
             <div class="fc-details-grid">
               <div class="fc-detail-item" title="Csapadék esély és mennyiség">
-                💧 <strong>${precipChance}%</strong> ${qpf > 0 ? `(${qpf.toFixed(1)}mm)` : ''}
+                💧 <strong>${item.pop}%</strong> ${Number(item.qpf) > 0 ? `(${fmt(item.qpf, 1)}mm)` : ''}
               </div>
               <div class="fc-detail-item" title="Várható szél">
-                💨 <strong>${windSpd}</strong> ${windDirCard}
+                💨 <strong>${item.windSpd}</strong> ${item.windDir}
               </div>
               <div class="fc-detail-item" title="Páratartalom">
-                🌫️ <strong>${hum}%</strong>
+                🌫️ <strong>${item.hum}%</strong>
               </div>
-              <div class="fc-detail-item" title="Éjjel / Nappal">
-                ${isNightPrimary ? '🌙 Éjjel' : '☀️ Nappal'}
+              <div class="fc-detail-item" title="Nappal">
+                ☀️ Nappal
               </div>
             </div>
 
-            ${narrative ? `<div class="fc-narrative">${narrative}</div>` : ''}
+            <div class="fc-sun-footer">
+              <span>🌅 ${item.sunrise}</span> • <span>🌇 ${item.sunset}</span>
+            </div>
+
+            ${item.narrative ? `<div class="fc-narrative">${item.narrative}</div>` : ''}
           </div>
         `;
-      }
+      });
 
       container.innerHTML = cardsHtml;
     }
@@ -2214,21 +2234,21 @@
       if (maxT !== -Infinity) {
         finalMaxStr = `${maxT.toFixed(1)} °C ${maxTime ? `(${maxTime})` : ''}`;
       } else if (currentTodayMax) {
-        finalMaxStr = currentTodayMax;
+        finalMaxStr = isValid(currentTodayMax) ? `${fmt(currentTodayMax, 1)} °C` : currentTodayMax;
       } else if (statMax) {
-        finalMaxStr = statMax;
+        finalMaxStr = isValid(statMax) ? `${fmt(statMax, 1)} °C` : statMax;
       } else if (data && data.current && isValid(data.current.temp)) {
-        finalMaxStr = `${fmt(data.current.temp)} °C`;
+        finalMaxStr = `${fmt(data.current.temp, 1)} °C`;
       }
 
       if (minT !== Infinity) {
         finalMinStr = `${minT.toFixed(1)} °C ${minTime ? `(${minTime})` : ''}`;
       } else if (currentTodayMin) {
-        finalMinStr = currentTodayMin;
+        finalMinStr = isValid(currentTodayMin) ? `${fmt(currentTodayMin, 1)} °C` : currentTodayMin;
       } else if (statMin) {
-        finalMinStr = statMin;
+        finalMinStr = isValid(statMin) ? `${fmt(statMin, 1)} °C` : statMin;
       } else if (data && data.current && isValid(data.current.temp)) {
-        finalMinStr = `${fmt(data.current.temp)} °C`;
+        finalMinStr = `${fmt(data.current.temp, 1)} °C`;
       }
 
       return { maxStr: finalMaxStr, minStr: finalMinStr };
@@ -2240,12 +2260,29 @@
         if (cached) {
           const parsed = JSON.parse(cached);
           if (parsed && parsed.data) {
-            applyData(parsed.data, true);
+            applyData(parsed.data, true, "tárolt");
           }
         }
       } catch (e) {}
+
+      try {
+        const cachedH = localStorage.getItem(HOURLY_CACHE_KEY);
+        if (cachedH) {
+          const parsedH = JSON.parse(cachedH);
+          if (parsedH && parsedH.data) renderUnifiedHourly(parsedH.data);
+        }
+      } catch(e) {}
+
+      try {
+        const cachedFc = localStorage.getItem(FC_CACHE_KEY);
+        if (cachedFc) {
+          const parsedFc = JSON.parse(cachedFc);
+          if (parsedFc && parsedFc.data) renderUnifiedForecast(parsedFc.data);
+        }
+      } catch(e) {}
     }
 
+    /* PWS ÉLŐ LEKÉRÉS + KIESÉS ESETÉN AZONNALI VALÓS TARTALÉK */
     async function fetchFreshWeather() {
       if (isFetchingWeather) return;
       isFetchingWeather = true;
@@ -2255,50 +2292,85 @@
       try {
         const cacheBuster = DEPLOY_URL + (DEPLOY_URL.includes('?') ? '&' : '?') + '_t=' + Date.now();
         const res = await fetch(cacheBuster);
-        if (!res.ok) throw new Error("Hálózati válaszkód: " + res.status);
+        if (!res.ok) throw new Error("PWS Hálózati hiba: " + res.status);
         const data = await res.json();
 
-        if (data && data.current) {
+        if (data && data.current && isValid(data.current.temp)) {
           try {
             localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
           } catch(storageErr) {}
 
-          applyData(data, false);
-          document.getElementById('live-indicator').innerText = "ONLINE";
+          applyData(data, false, "PWS");
+          document.getElementById('live-indicator').innerText = "ONLINE (PWS)";
           document.getElementById('live-indicator').style.color = "var(--accent-green)";
+          document.getElementById('source-badge').innerText = "Balkány PWS (Élő)";
+          const roseSrc = document.getElementById('rose-sensor-source');
+          if (roseSrc) roseSrc.innerText = "PWS Szenzor";
+        } else {
+          throw new Error("PWS érvénytelen válasz");
         }
       } catch (err) {
-        document.getElementById('live-indicator').innerText = "KAPCSOLAT HIBA";
-        document.getElementById('live-indicator').style.color = "var(--accent-orange)";
+        console.warn("PWS nem elérhető, tartalék élő feed aktív.");
+        if (cachedHourlyRaw && cachedHourlyRaw.length > 0) {
+          document.getElementById('live-indicator').innerText = "ONLINE (TARTALÉK)";
+          document.getElementById('live-indicator').style.color = "var(--accent-orange)";
+          document.getElementById('source-badge').innerText = "Tartalék Modell";
+        }
       } finally {
         isFetchingWeather = false;
         btn.classList.remove('spinning');
       }
+    }
 
-      fetchForecastIfNeeded();
-      fetchHourlyForecastIfNeeded();
+    function applyFallbackCurrentData(c) {
+      const now = new Date();
+      const fallbackObj = {
+        current: {
+          time: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`,
+          temp: c.temperature_2m,
+          hum: c.relative_humidity_2m,
+          bar: c.surface_pressure,
+          wind: c.wind_speed_10m,
+          gust: c.wind_gusts_10m !== undefined ? c.wind_gusts_10m : c.wind_speed_10m,
+          wdir: c.wind_direction_10m,
+          chill: c.apparent_temperature,
+          dew: c.temperature_2m - ((100 - c.relative_humidity_2m) / 5),
+          rain: c.precipitation || 0.0,
+          rainrate: c.precipitation || 0.0,
+          uvi: 2.0,
+          solarrad: 0,
+          isFallback: true
+        },
+        history: []
+      };
+
+      applyData(fallbackObj, false, "Tartalék");
+      document.getElementById('live-indicator').innerText = "ONLINE (TARTALÉK)";
+      document.getElementById('live-indicator').style.color = "var(--accent-orange)";
+      document.getElementById('source-badge').innerText = "Tartalék Modell";
+      const roseSrc = document.getElementById('rose-sensor-source');
+      if (roseSrc) roseSrc.innerText = "Modell Feed";
     }
 
     function forceRefresh() {
       fetchFreshWeather();
-      fetchForecastIfNeeded(true);
-      fetchHourlyForecastIfNeeded(true);
+      fetchCompleteForecast(true);
     }
 
-    function applyData(data, isFromCache) {
+    function applyData(data, isFromCache, sourceName = "PWS") {
       if (!data || !data.current) return;
       latestCurrentData = data.current;
 
       latestExtremes = extractTodayExtremes(data);
 
-      renderCurrentCard(data.current, isFromCache, latestExtremes);
+      renderCurrentCard(data.current, isFromCache, latestExtremes, sourceName);
       renderRainLog(data.rainLog);
       renderStats(data.stats, latestExtremes);
       renderTableOrList(data.history || []);
       updateWindRoseUI(data.current);
 
       if (cachedHourlyRaw) {
-        renderHourlyAndNowcast(cachedHourlyRaw);
+        renderUnifiedHourly(cachedHourlyRaw);
       }
 
       if (typeof Chart !== 'undefined') {
@@ -2306,7 +2378,7 @@
       }
     }
 
-    function renderCurrentCard(curr, isCached, extremes) {
+    function renderCurrentCard(curr, isCached, extremes, sourceName) {
       const leftPanel = document.getElementById('left-panel');
       const timeTop = document.getElementById('time-top');
 
@@ -2322,11 +2394,9 @@
       const absHum = calcAbsoluteHumidity(curr.temp, curr.hum);
       const airDensity = calcAirDensity(curr.bar, curr.temp);
 
-      // ÚJ VALÓS TERMODINAMIKAI PWS SZÁMÍTÁSOK
       const vpdVal = calcVPD(curr.temp, curr.hum);
       const wetBulbVal = calcWetBulb(curr.temp, curr.hum);
       const windForceVal = calcWindPressure(curr.wind, airDensity);
-      const etVal = calcEvapotranspiration(curr.solarrad, curr.temp);
 
       const makeCard = (id, label, valStr, unit = "", color = "#f8fafc", subtext = "") => {
         return `
@@ -2341,16 +2411,16 @@
       const arrowHtml = `<span class="wind-arrow" id="wind-arrow-icon" style="transform:rotate(${windDir.deg}deg)">${windDir.arrow}</span>`;
 
       let gridHtml = "";
-      gridHtml += makeCard("dew-card", "Harmatpont", fmt(curr.dew), "°C", getTempColor(curr.dew), "Kondenzációs küszöb");
+      gridHtml += makeCard("dew-card", "Harmatpont", fmt(curr.dew, 1), "°C", getTempColor(curr.dew), "Kondenzációs küszöb");
       
       if (wetBulbVal !== null) {
-        gridHtml += makeCard("wb-card", "Nedves Hőm.", wetBulbVal, "°C", getTempColor(wetBulbVal), "Wet Bulb / Fázishatár");
+        gridHtml += makeCard("wb-card", "Nedves Hőm.", fmt(wetBulbVal, 1), "°C", getTempColor(wetBulbVal), "Wet Bulb / Fázishatár");
       } else {
-        gridHtml += makeCard("chill-card", "Hőérzet", fmt(curr.chill), "°C", getTempColor(curr.chill), "Wind Chill");
+        gridHtml += makeCard("chill-card", "Hőérzet", fmt(curr.chill, 1), "°C", getTempColor(curr.chill), "Wind Chill");
       }
 
-      gridHtml += makeCard("heat-card", "Hőindex", fmt(curr.heat), "°C", getTempColor(curr.heat), "Heat Index");
-      gridHtml += makeCard("bar-card", "Légnyomás", fmt(curr.bar), "hPa", "var(--accent-purple)", "Relatív barométer");
+      gridHtml += makeCard("heat-card", "Hőindex", fmt(curr.heat, 1), "°C", getTempColor(curr.heat), "Heat Index");
+      gridHtml += makeCard("bar-card", "Légnyomás", fmt(curr.bar, 1), "hPa", "var(--accent-purple)", "Relatív barométer");
 
       if (vpdVal !== null) {
         let vpdColor = "var(--accent-green)";
@@ -2365,14 +2435,14 @@
         gridHtml += makeCard("wforce-card", "Szél Torlónyomás", windForceVal, "kg/m²", getWindColor(curr.wind), "Épületre / Fákra mért");
       }
 
-      gridHtml += makeCard("gust-card", "Lökés Csúcs", fmt(curr.gust), "km/h", getWindColor(curr.gust), "Pillanatnyi csúcs");
+      gridHtml += makeCard("gust-card", "Lökés Csúcs", fmt(curr.gust, 1), "km/h", getWindColor(curr.gust), "Pillanatnyi csúcs");
       gridHtml += makeCard("wdir-card", "Szélirány", `${windDir.text} (${windDir.deg}°)`, arrowHtml, "var(--accent-blue)", `${bft.desc} (Bft ${bft.bft})`);
       
       const luxVal = isValid(curr.solarrad) ? Math.round(Number(curr.solarrad) * 126.7).toLocaleString('hu-HU') + ' Lux' : '';
       gridHtml += makeCard("solar-card", "Napsugárzás", fmt(curr.solarrad, 0), "W/m²", "var(--accent-yellow)", luxVal);
-      gridHtml += makeCard("uvi-card", "UV Index", fmt(curr.uvi), "", uvInfo.color, uvInfo.label);
-      gridHtml += makeCard("rain-card", "Napi Csapadék", fmt(curr.rain), "mm", "var(--accent-blue)", "00:00-tól mért");
-      gridHtml += makeCard("rate-card", "Csapadék Ráta", fmt(curr.rainrate), "mm/h", "var(--accent-blue)", Number(curr.rainrate) > 0 ? "Aktív hullás" : "Száraz idő");
+      gridHtml += makeCard("uvi-card", "UV Index", fmt(curr.uvi, 1), "", uvInfo.color, uvInfo.label);
+      gridHtml += makeCard("rain-card", "Napi Csapadék", fmt(curr.rain, 1), "mm", "var(--accent-blue)", "00:00-tól mért");
+      gridHtml += makeCard("rate-card", "Csapadék Ráta", fmt(curr.rainrate, 1), "mm/h", "var(--accent-blue)", Number(curr.rainrate) > 0 ? "Aktív hullás" : "Száraz idő");
 
       if (cloudBase !== null) gridHtml += makeCard("cbase-card", "Felhőalap (LCL)", cloudBase.toLocaleString('hu-HU'), "m", "var(--accent-blue)", "Gomolyfelhő bázis");
       if (absHum !== null) gridHtml += makeCard("ahum-card", "Abszolút Pára", absHum, "g/m³", "var(--accent-blue)", "Légtér víztartalom");
@@ -2381,7 +2451,7 @@
       if (isValid(curr.tempin) || isValid(curr.temp_in)) {
         const inT = curr.tempin || curr.temp_in;
         const inH = curr.humin || curr.humidityin || "";
-        gridHtml += makeCard("indoor-card", "Beltéri Klíma", `${fmt(inT)} °C`, "", "#f8fafc", inH ? `Pára: ${fmt(inH)}%` : "");
+        gridHtml += makeCard("indoor-card", "Beltéri Klíma", `${fmt(inT, 1)} °C`, "", "#f8fafc", inH ? `Pára: ${fmt(inH, 0)}%` : "");
       }
 
       const tMaxStr = extremes ? extremes.maxStr : "N/A";
@@ -2390,8 +2460,17 @@
       leftPanel.innerHTML = `
         <div class="hero-studio">
           <div style="font-size:9px; font-weight:800; color:${tColor}; letter-spacing:0.8px; text-transform:uppercase;">JELENLEGI HŐMÉRSÉKLET</div>
-          <div class="main-temp" style="color:${tColor}; text-shadow: 0 0 25px ${tColor}35;">${fmt(curr.temp)} °C</div>
+          <div class="main-temp" style="color:${tColor}; text-shadow: 0 0 25px ${tColor}35;">${fmt(curr.temp, 1)} °C</div>
           
+          <!-- Pillanatnyi Égkép és Felhőborítottság -->
+          <div class="sky-condition-badge">
+            <span class="sky-icon" id="hero-sky-icon">${currentSkyCondition.emoji}</span>
+            <div class="sky-text-box">
+              <span class="sky-phrase" id="hero-sky-phrase">${currentSkyCondition.phrase}</span>
+              <span class="sky-cloud-cover" id="hero-cloud-cover">☁️ Felhőzet: <strong>${fmt(currentSkyCondition.cloudCover, 0)}%</strong></span>
+            </div>
+          </div>
+
           <div class="hero-extremes-container">
             <div class="hero-extremes-row">
               <div class="extreme-pill" title="Helyi automata által ma mért legmagasabb hőmérséklet">
@@ -2405,11 +2484,11 @@
             </div>
 
             <div class="hero-extremes-row">
-              <div class="extreme-pill forecast-pill" title="Weather.com által mára várt legmagasabb hőmérséklet">
+              <div class="extreme-pill forecast-pill" title="Mára várt legmagasabb hőmérséklet">
                 <span class="extreme-label" style="color:var(--accent-orange);">🟠 Várható Max:</span>
                 <span class="extreme-val" id="hero-fc-max" style="color:var(--accent-orange);">${latestFcMax}</span>
               </div>
-              <div class="extreme-pill forecast-pill" title="Weather.com által mára várt legalacsonyabb hőmérséklet">
+              <div class="extreme-pill forecast-pill" title="Mára várt legalacsonyabb hőmérséklet">
                 <span class="extreme-label" style="color:var(--accent-blue);">🔵 Várható Min:</span>
                 <span class="extreme-val" id="hero-fc-min" style="color:var(--accent-blue);">${latestFcMin}</span>
               </div>
@@ -2424,7 +2503,7 @@
             </div>
             <div class="stat-box">
               <div class="stat-label">Szélsebesség</div>
-              <div class="stat-value" id="hero-wind-val" style="color:${wColor}">${fmt(curr.wind)} km/h</div>
+              <div class="stat-value" id="hero-wind-val" style="color:${wColor}">${fmt(curr.wind, 1)} km/h</div>
               <div class="gauge-bar-bg"><div id="hero-wind-bar" class="gauge-bar-fill" style="width:${Math.min(100, (Number(curr.wind)||0)*2)}%; background:${wColor};"></div></div>
             </div>
           </div>
@@ -2443,9 +2522,7 @@
       const wColor = getWindColor(speedKmH);
 
       const needleEl = document.getElementById('compass-needle');
-      if (needleEl) {
-        needleEl.style.transform = `rotate(${windDir.deg}deg)`;
-      }
+      if (needleEl) needleEl.style.transform = `rotate(${windDir.deg}deg)`;
 
       const hubDeg = document.getElementById('hub-deg-val');
       const hubCard = document.getElementById('hub-cardinal-val');
@@ -2454,7 +2531,7 @@
 
       const roseSpeed = document.getElementById('rose-speed-val');
       if (roseSpeed) {
-        roseSpeed.innerHTML = `${speedKmH.toFixed(1)}<span class="live-speed-unit">km/h</span>`;
+        roseSpeed.innerHTML = `${fmt(speedKmH, 1)}<span class="live-speed-unit">km/h</span>`;
         roseSpeed.style.color = wColor;
       }
 
@@ -2474,7 +2551,7 @@
 
       const roseGust = document.getElementById('rose-gust-val');
       if (roseGust) {
-        roseGust.innerText = `${fmt(curr.gust)} km/h`;
+        roseGust.innerText = `${fmt(curr.gust, 1)} km/h`;
         roseGust.style.color = getWindColor(curr.gust);
       }
     }
@@ -2488,7 +2565,7 @@
 
       let html = `<div class="rain-summary-badge">
         <span>🌧️ Mai összesített csapadék (00:00-tól):</span>
-        <span style="font-size:clamp(11px, 2vw, 13px);">${fmt(rainLog.todayTotalRain)} mm</span>
+        <span style="font-size:clamp(11px, 2vw, 13px);">${fmt(rainLog.todayTotalRain, 1)} mm</span>
       </div>`;
 
       if (!rainLog.events || rainLog.events.length === 0) {
@@ -2496,14 +2573,14 @@
       } else {
         rainLog.events.forEach(ev => {
           html += `<div class="rain-event-box">`;
-          html += `<div class="rain-event-header">💧 Csapadék-esemény (${ev.startTime} - ${ev.endTime}) • Összesen: ${ev.totalMm} mm</div>`;
+          html += `<div class="rain-event-header">💧 Csapadék-esemény (${ev.startTime} - ${ev.endTime}) • Összesen: ${fmt(ev.totalMm, 1)} mm</div>`;
           
           if (ev.segments && ev.segments.length > 0) {
             ev.segments.forEach(seg => {
               html += `
                 <div class="rain-segment">
                   <span>${seg.timeRange} - ${seg.category}</span>
-                  <span style="color:var(--accent-blue); font-weight:bold;">${seg.mm} mm</span>
+                  <span style="color:var(--accent-blue); font-weight:bold;">${fmt(seg.mm, 1)} mm</span>
                 </div>
               `;
             });
@@ -2688,14 +2765,14 @@
             <div class="mobile-log-card">
               <div class="mobile-log-top">
                 <span>⏱️ ${row.time || 'N/A'}</span>
-                <span style="color:${tColor}">${fmt(row.temp)} °C</span>
-                <span style="color:var(--accent-blue)">🌧️ ${fmt(row.rain)} mm</span>
+                <span style="color:${tColor}">${fmt(row.temp, 1)} °C</span>
+                <span style="color:var(--accent-blue)">🌧️ ${fmt(row.rain, 1)} mm</span>
               </div>
               <div class="mobile-log-sub">
                 <span>Pára: ${fmt(row.hum, 0)}%</span>
-                <span>Légny.: ${fmt(row.bar)} hPa</span>
-                <span style="color:${wColor}">Szél: ${fmt(row.wind)} km/h</span>
-                <span style="color:var(--accent-purple)">Lökés: ${fmt(row.gust)} km/h</span>
+                <span>Légny.: ${fmt(row.bar, 1)} hPa</span>
+                <span style="color:${wColor}">Szél: ${fmt(row.wind, 1)} km/h</span>
+                <span style="color:var(--accent-purple)">Lökés: ${fmt(row.gust, 1)} km/h</span>
               </div>
             </div>
           `;
@@ -2725,12 +2802,12 @@
           tableHtml += `
             <tr>
               <td><strong>${row.time || 'N/A'}</strong></td>
-              <td style="color:${tColor}; font-weight:bold;">${fmt(row.temp)} °C</td>
+              <td style="color:${tColor}; font-weight:bold;">${fmt(row.temp, 1)} °C</td>
               <td>${fmt(row.hum, 0)} %</td>
-              <td>${fmt(row.bar)} hPa</td>
-              <td style="color:${wColor}; font-weight:bold;">${fmt(row.wind)} km/h</td>
-              <td style="color:var(--accent-purple);">${fmt(row.gust)} km/h</td>
-              <td style="color:var(--accent-blue);">${fmt(row.rain)} mm</td>
+              <td>${fmt(row.bar, 1)} hPa</td>
+              <td style="color:${wColor}; font-weight:bold;">${fmt(row.wind, 1)} km/h</td>
+              <td style="color:var(--accent-purple);">${fmt(row.gust, 1)} km/h</td>
+              <td style="color:var(--accent-blue);">${fmt(row.rain, 1)} mm</td>
             </tr>
           `;
         });
@@ -2749,22 +2826,19 @@
 
       setTimeout(() => {
         fetchFreshWeather();
+        fetchCompleteForecast(true);
         scheduleSync();
       }, msToNext);
     }
 
-    setInterval(() => {
-      fetchHourlyForecastIfNeeded();
-      fetchForecastIfNeeded();
-    }, 600000);
-
+    /* BELÉPÉSKOR PÁRHUZAMOS, AZONNALI KÉRÉSEK VÁRAKOZÁS NÉLKÜL */
     window.addEventListener('DOMContentLoaded', () => {
-      calcBalkanySunTimes();
       hydrateFromCache();
-      hydrateHourlyFromCache();
-      hydrateForecastFromCache();
 
+      // Párhuzamos azonnali indítás:
       fetchFreshWeather();
+      fetchCompleteForecast(true);
+
       scheduleSync();
     });
 
@@ -2775,8 +2849,7 @@
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
         fetchFreshWeather();
-        fetchForecastIfNeeded();
-        fetchHourlyForecastIfNeeded();
+        fetchCompleteForecast(true);
       }
     });
   </script>
