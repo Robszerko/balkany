@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Balkány Meteorológiai Állomás (PWS)</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <style>
     :root {
       --bg-dark: #070a12; --card-bg: #111a2c; --card-border: #1a273d; --card-hover: #223350;
@@ -99,12 +100,105 @@
     .aqi-badge { padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: 900; text-transform: uppercase; }
     .pollen-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
     .pollen-chip { background: rgba(255,255,255,0.025); border: 1px solid var(--card-border); border-radius: 8px; padding: 4px 8px; font-size: 9px; font-weight: 700; color: var(--text-sub); display: flex; align-items: center; gap: 4px; flex: 1 1 calc(33% - 6px); min-width: 95px; justify-content: space-between; }
-    .radar-controls { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
-    .radar-layers { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
-    .radar-layer-btn { background: rgba(255, 255, 255, 0.04); border: 1px solid var(--card-border); color: var(--text-sub); padding: 4px 10px; border-radius: 14px; font-size: 9.5px; font-weight: 800; cursor: pointer; }
-    .radar-layer-btn.active { background: rgba(56, 189, 248, 0.16); border-color: var(--accent-blue); color: var(--accent-blue); }
-    .radar-frame-wrap { margin-top: 8px; border-radius: 12px; overflow: hidden; border: 1px solid var(--card-border); height: clamp(280px, 50vw, 390px); background: #090d16; }
-    .radar-frame-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+    /* Premium Balkany radar module — responsive, low-cost visual treatment */
+    .radar-controls { display:flex; align-items:center; justify-content:space-between; gap:9px; flex-wrap:wrap; }
+    .radar-layers { display:flex; gap:7px; flex-wrap:nowrap; overflow-x:auto; overscroll-behavior-x:contain; padding:7px 1px 5px; margin-top:8px; scrollbar-width:thin; scrollbar-color:rgba(56,189,248,.35) transparent; }
+    .radar-layer-btn { flex:0 0 auto; min-height:36px; padding:7px 12px; border-radius:11px; background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025)); border:1px solid rgba(148,163,184,.16); color:#b8c6d9; font-size:10px; font-weight:850; cursor:pointer; transition:background .16s ease,border-color .16s ease,color .16s ease; touch-action:manipulation; }
+    .radar-layer-btn.active { background:linear-gradient(135deg,rgba(14,165,233,.22),rgba(6,182,212,.10)); border-color:rgba(56,189,248,.62); color:#7dd3fc; box-shadow:inset 0 0 0 1px rgba(56,189,248,.08); }
+    .radar-frame-wrap { position:relative; margin-top:8px; border-radius:16px; overflow:hidden; border:1px solid rgba(96,165,250,.23); height:clamp(320px,48vw,540px); background:radial-gradient(circle at 50% 45%,#13263a,#07111e 70%); box-shadow:0 14px 34px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.04); }
+    .radar-frame-wrap iframe { width:100%; height:100%; border:0; display:block; }
+    .radar-frame-wrap #balkany-radar-map { width:100%; height:100%; min-height:320px; background:#081321; }
+    .radar-frame-wrap .leaflet-container { background:#081321; color:#e2e8f0; font-family:inherit; }
+    .radar-frame-wrap .leaflet-control-attribution { font-size:8px; background:rgba(7,10,18,.82); color:#cbd5e1; }
+    .radar-frame-wrap .leaflet-control-attribution a { color:#7dd3fc; }
+    .radar-frame-wrap .leaflet-tile-pane .leaflet-layer { transition:opacity 110ms linear; will-change:opacity; }
+    .radar-map-legend { background:rgba(5,13,25,.92); color:#f8fafc; border:1px solid rgba(148,163,184,.28); border-radius:11px; padding:8px 10px; box-shadow:0 5px 18px rgba(0,0,0,.32); font:800 9px/1.35 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; min-width:145px; backdrop-filter:blur(8px); }
+    .radar-map-legend-title { font-size:9px; letter-spacing:.4px; margin-bottom:6px; color:#e2e8f0; }
+    .radar-map-legend-bar { height:9px; border-radius:6px; background:linear-gradient(90deg,#8bd8ff 0%,#2375ff 20%,#16c765 42%,#f3e52b 62%,#ff941f 80%,#e52b27 100%); border:1px solid rgba(255,255,255,.35); }
+    .radar-map-legend-labels { display:flex; justify-content:space-between; gap:4px; margin-top:4px; color:#cbd5e1; font-size:8px; }
+    .radar-map-refresh-tag { background:rgba(5,13,25,.9); color:#dbeafe; border:1px solid rgba(56,189,248,.42); border-radius:9px; padding:5px 8px; font:850 8px/1.2 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; box-shadow:0 4px 12px rgba(0,0,0,.24); }
+    .radar-map-marker-label { pointer-events:none; display:inline-flex; align-items:center; justify-content:center; gap:5px; min-width:76px; height:28px; padding:0 9px; border-radius:18px; color:#06101a; background:#f8fafc; border:2px solid #38bdf8; font-weight:1000; font-size:10px; letter-spacing:.35px; white-space:nowrap; box-shadow:0 0 0 5px rgba(56,189,248,.20),0 2px 8px rgba(0,0,0,.5); }
+    .radar-map-marker-label span { color:#0284c7; font-size:12px; }
+    .radar-playback { display:grid; grid-template-columns:auto minmax(0,1fr); align-items:center; gap:10px; padding:10px 12px; margin-top:9px; border:1px solid rgba(148,163,184,.16); border-radius:13px; background:linear-gradient(135deg,rgba(14,25,43,.96),rgba(9,17,30,.96)); }
+    .radar-play-btn { border:1px solid rgba(56,189,248,.38); border-radius:10px; background:rgba(56,189,248,.13); color:#7dd3fc; padding:8px 12px; min-height:36px; font-weight:900; font-size:10px; cursor:pointer; touch-action:manipulation; white-space:nowrap; }
+    .radar-range-wrap { min-width:0; display:flex; flex-direction:column; gap:4px; }
+    .radar-range { display:block; width:100%; min-width:0; accent-color:#38bdf8; cursor:pointer; touch-action:pan-x; }
+    .radar-frame-time { font-size:9px; color:#9fb0c5; display:flex; justify-content:space-between; gap:6px; }
+    .radar-frame-time strong { color:#eaf5ff; font-weight:900; }
+    .radar-credit-line { margin:7px 3px 10px; color:#8293a9; font-size:9px; line-height:1.5; }
+    .radar-credit-line a { color:#7dd3fc; text-decoration:none; }
+    .radar-insight-card { position:relative; isolation:isolate; overflow:hidden; background:radial-gradient(ellipse at 100% 0%,rgba(14,165,233,.13),transparent 38%),linear-gradient(145deg,#101f34 0%,#0a1424 55%,#0a1321 100%); border:1px solid rgba(56,189,248,.27); border-radius:18px; padding:clamp(13px,2vw,19px); margin-top:10px; box-shadow:0 16px 35px rgba(0,0,0,.26),inset 0 1px 0 rgba(255,255,255,.035); }
+    .radar-insight-card::after { content:""; position:absolute; z-index:-1; width:230px; height:230px; right:-115px; bottom:-150px; border-radius:50%; border:1px solid rgba(56,189,248,.08); box-shadow:0 0 0 22px rgba(56,189,248,.018),0 0 0 48px rgba(56,189,248,.012); pointer-events:none; }
+    .radar-premium-head { display:flex; align-items:center; justify-content:space-between; gap:9px; margin-bottom:12px; flex-wrap:wrap; }
+    .radar-premium-kicker { color:#7dd3fc; font-size:9px; font-weight:950; letter-spacing:1.2px; text-transform:uppercase; }
+    .radar-premium-title { color:#f1f7ff; font-size:clamp(15px,2.6vw,19px); font-weight:950; letter-spacing:-.25px; margin-top:2px; }
+    .radar-live-status { display:inline-flex; align-items:center; gap:7px; padding:6px 9px; border-radius:20px; border:1px solid rgba(56,189,248,.25); color:#bfdbfe; background:rgba(8,47,73,.42); font-size:8px; font-weight:900; letter-spacing:.4px; white-space:nowrap; }
+    .radar-live-dot { width:6px; height:6px; border-radius:50%; background:#34d399; box-shadow:0 0 0 3px rgba(52,211,153,.12); }
+    .radar-live-status strong { color:#f0f9ff; font-size:9px; }
+    .radar-status-strip { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:10px; padding:12px; border:1px solid rgba(56,189,248,.2); border-radius:14px; background:linear-gradient(110deg,rgba(8,47,73,.48),rgba(15,23,42,.58)); }
+    .radar-status-strip.is-approaching { border-color:rgba(251,191,36,.38); background:linear-gradient(110deg,rgba(120,53,15,.2),rgba(15,23,42,.68)); }
+    .radar-status-strip.is-detected { border-color:rgba(56,189,248,.32); }
+    .radar-status-strip.is-clear { border-color:rgba(52,211,153,.25); background:linear-gradient(110deg,rgba(6,78,59,.17),rgba(15,23,42,.62)); }
+    .radar-status-strip.is-unavailable { border-color:rgba(251,146,60,.3); background:linear-gradient(110deg,rgba(124,45,18,.16),rgba(15,23,42,.62)); }
+    .radar-status-symbol { width:36px; height:36px; border-radius:12px; display:grid; place-items:center; background:rgba(56,189,248,.13); color:#7dd3fc; font-size:18px; border:1px solid rgba(56,189,248,.18); }
+    .is-approaching .radar-status-symbol { color:#fcd34d; background:rgba(245,158,11,.12); border-color:rgba(245,158,11,.2); }
+    .is-clear .radar-status-symbol { color:#6ee7b7; background:rgba(16,185,129,.1); border-color:rgba(16,185,129,.18); }
+    .radar-insight-status { color:#f8fafc; font-size:clamp(12px,2.3vw,15px); line-height:1.25; font-weight:950; margin-bottom:4px; }
+    .radar-insight-detail { color:#b8c7da; font-size:10px; line-height:1.48; }
+    .radar-confidence-chip { align-self:start; padding:5px 7px; border-radius:7px; color:#fcd34d; background:rgba(245,158,11,.09); border:1px solid rgba(245,158,11,.17); font-size:7.5px; font-weight:950; letter-spacing:.35px; text-align:center; white-space:nowrap; }
+    .radar-summary-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; margin-top:10px; }
+    .radar-summary-card { min-width:0; padding:10px 10px 9px; border-radius:12px; border:1px solid rgba(148,163,184,.13); background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.018)); }
+    .radar-summary-card.primary { background:linear-gradient(145deg,rgba(8,145,178,.18),rgba(15,23,42,.65)); border-color:rgba(34,211,238,.25); }
+    .radar-summary-label { display:block; color:#8da2ba; font-size:8px; line-height:1.25; text-transform:uppercase; font-weight:900; letter-spacing:.45px; }
+    .radar-summary-card strong { display:block; color:#f8fafc; margin-top:6px; font-size:clamp(13px,2.5vw,18px); line-height:1.1; font-weight:950; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+    .radar-summary-card small { display:block; color:#9fb0c5; margin-top:4px; font-size:8px; line-height:1.3; }
+    .radar-section-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:9px; flex-wrap:wrap; }
+    .radar-section-title { color:#dceeff; font-size:10px; font-weight:950; letter-spacing:.6px; text-transform:uppercase; }
+    .radar-section-subtitle { color:#7f93ab; font-size:8px; font-weight:750; }
+    .radar-nearest-panel { margin-top:10px; padding:12px; border:1px solid rgba(56,189,248,.18); border-radius:14px; background:linear-gradient(135deg,rgba(5,27,45,.84),rgba(7,17,31,.78)); }
+    .radar-nearest-place-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 9px; padding:9px 10px; border-radius:10px; background:rgba(56,189,248,.07); border:1px solid rgba(56,189,248,.12); }
+    .radar-nearest-place-label { color:#829ab4; font-size:7.5px; text-transform:uppercase; letter-spacing:.65px; font-weight:950; }
+    .radar-nearest-place-name { color:#e0f2fe; font-size:12px; font-weight:950; margin-top:3px; line-height:1.25; overflow-wrap:anywhere; }
+    .radar-place-link { flex:0 0 auto; color:#7dd3fc; font-size:8px; font-weight:900; text-decoration:none; padding:6px 8px; border:1px solid rgba(56,189,248,.24); border-radius:8px; }
+    .radar-nearest-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+    .radar-nearest-cell { min-width:0; padding:9px; border-radius:10px; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.07); }
+    .radar-nearest-cell span { display:block; color:#8da2ba; font-size:7.5px; line-height:1.25; text-transform:uppercase; font-weight:900; letter-spacing:.3px; }
+    .radar-nearest-cell strong { display:block; margin-top:5px; color:#f1f7ff; font-size:clamp(10px,2.2vw,13px); line-height:1.3; font-weight:950; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+    .radar-nearest-note { margin-top:8px; color:#8293a9; font-size:8px; line-height:1.5; }
+    .radar-model-panel { margin-top:10px; padding:12px; border:1px solid rgba(167,139,250,.2); border-radius:14px; background:linear-gradient(135deg,rgba(43,31,75,.28),rgba(9,18,32,.8)); }
+    .radar-model-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+    .radar-model-window { min-width:0; padding:10px 9px; border-radius:11px; background:rgba(8,13,27,.56); border:1px solid rgba(167,139,250,.13); }
+    .radar-model-window span { display:block; color:#b9a7ed; font-size:8px; letter-spacing:.55px; font-weight:950; }
+    .radar-model-window strong { display:block; margin-top:6px; color:#f5f3ff; font-size:clamp(12px,2.4vw,16px); font-weight:950; line-height:1.2; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+    .radar-model-window small { display:block; color:#a8a4bb; margin-top:4px; font-size:7.5px; line-height:1.35; }
+    .radar-model-foot { display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; color:#8d8ba9; font-size:8px; margin-top:8px; }
+    .radar-bottom-meta { display:flex; align-items:center; gap:7px; flex-wrap:wrap; margin-top:10px; }
+    .radar-meta-chip { padding:5px 8px; border-radius:8px; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.07); color:#b2c2d5; font-size:8px; font-weight:850; }
+    .radar-meta-chip strong { color:#f8fafc; }
+    .radar-insight-foot { border-top:1px solid rgba(148,163,184,.13); margin-top:10px; padding-top:9px; font-size:8px; color:#8293a9; line-height:1.5; }
+    .radar-insight-foot a { color:#7dd3fc; }
+    .windy-map-fixed { position:relative; width:100%; height:100%; min-height:280px; overflow:hidden; background:#0a1220; }
+    .windy-map-fixed iframe { width:100%; height:100%; border:0; display:block; pointer-events:none; }
+    .windy-zoom-mask { position:absolute; right:6px; bottom:7px; width:39px; height:77px; border-radius:9px; z-index:5; pointer-events:none; background:linear-gradient(135deg,rgba(7,14,25,.92),rgba(7,14,25,.72)); border:1px solid rgba(148,163,184,.16); box-shadow:0 2px 9px rgba(0,0,0,.22); }
+    @media (max-width:680px) {
+      .radar-frame-wrap { height:clamp(310px,88vw,430px); }
+      .radar-status-strip { grid-template-columns:auto minmax(0,1fr); }
+      .radar-confidence-chip { grid-column:2; justify-self:start; }
+      .radar-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+    @media (max-width:390px) {
+      .radar-insight-card { padding:11px; border-radius:15px; }
+      .radar-nearest-grid { grid-template-columns:1fr 1fr; }
+      .radar-nearest-cell:last-child { grid-column:span 2; }
+      .radar-model-grid { gap:5px; }
+      .radar-model-window { padding:8px 7px; }
+      .radar-model-window strong { font-size:12px; }
+      .radar-premium-head { align-items:flex-start; }
+      .radar-live-status { font-size:7px; }
+    }
+    @media (prefers-reduced-motion:reduce) { .radar-layer-btn,.radar-map-marker-label { transition:none!important; animation:none!important; } }
+
     .precip-focus-card { background: linear-gradient(135deg, rgba(14, 30, 52, 0.95) 0%, rgba(10, 18, 32, 0.98) 100%); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 16px; padding: clamp(12px, 2vw, 18px); margin-bottom: 12px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); position: relative; overflow: hidden; }
     .precip-focus-card::before { content: ""; position: absolute; top: -40px; right: -40px; width: 140px; height: 140px; background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(0,0,0,0) 70%); pointer-events: none; }
     .nowcast-head-flex { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
@@ -372,6 +466,96 @@
         </div>
 
         <div class="card">
+          <div class="radar-controls">
+            <div class="card-title" style="margin-bottom:0;"><span>🌧️ BALKÁNY ÉS KÖRNYÉKE · CSAPADÉKRADAR</span><span style="font-size:9px;color:var(--accent-cyan);">Balkány középpont · 47.77° É · 21.86° K · 10 perces automatikus frissítés</span></div>
+            <button class="refresh-btn" id="radar-toggle-btn" onclick="toggleRadarMap()">✖️ Térkép bezárása</button>
+          </div>
+          <div id="radar-body" style="display:block;">
+            <div class="radar-layers">
+              <button class="radar-layer-btn active" data-layer="radar" onclick="setRadarLayer('radar', this)">🌧️ Esőradar</button>
+              <button class="radar-layer-btn" data-layer="satellite" onclick="setRadarLayer('satellite', this)">🛰️ Műhold</button>
+              <button class="radar-layer-btn" data-layer="wind" onclick="setRadarLayer('wind', this)">💨 Szél</button>
+              <button class="radar-layer-btn" data-layer="thunder" onclick="setRadarLayer('thunder', this)">⚡ Villámlás</button>
+              <button class="radar-layer-btn" data-layer="clouds" onclick="setRadarLayer('clouds', this)">☁️ Felhőzet</button>
+            </div>
+            <div class="radar-frame-wrap" id="radar-frame-wrap"><div style="height:100%;min-height:280px;display:flex;align-items:center;justify-content:center;padding:18px;text-align:center;color:#94a3b8;font-size:11px;">🌧️ Balkány környéki radarkép betöltése…</div></div>
+            <div class="radar-playback" id="radar-playback" style="display:none;">
+              <button class="radar-play-btn" id="radar-play-toggle" type="button" onclick="toggleBalkanyRadarPlayback()">▶ Lejátszás</button>
+              <div class="radar-range-wrap">
+                <input class="radar-range" id="radar-frame-slider" type="range" min="0" max="0" value="0" step="0.01" aria-label="Radarkép időpontja">
+                <div class="radar-frame-time"><span>2 órával ezelőtt</span><strong id="radar-frame-time">Radarképek betöltése…</strong><span>Legfrissebb</span></div>
+              </div>
+            </div>
+            <div class="radar-credit-line">Valós, múltbeli radarképek: <a href="https://www.rainviewer.com/" target="_blank" rel="noopener">Weather data by RainViewer</a> · Részletes utcai térképalap: Esri World Street Map. A többi térképréteg rögzített nagyítású, nem nagyítható/kicsinyíthető nézet (Windy-adatok; <a href="https://www.windy.com/47.77/21.86" target="_blank" rel="noopener">Windy.com</a>). A csúszka a tényleges, 10 percenkénti radarképkockák között finom áttűnéssel kever; a köztes állapot vizuális átmenet, nem új mérési adat.</div>
+            <section class="radar-insight-card" id="balkany-radar-insight" aria-live="polite">
+              <div class="radar-premium-head">
+                <div>
+                  <div class="radar-premium-kicker">BALKÁNY · HELYI CSAPADÉKFIGYELŐ</div>
+                  <div class="radar-premium-title">Radarhelyzet és rövid távú kilátás</div>
+                </div>
+                <div class="radar-live-status"><span class="radar-live-dot"></span><span>UTOLSÓ ELEMZÉS</span><strong id="radar-analysis-stamp">VÁRAKOZÁS</strong></div>
+              </div>
+
+              <div class="radar-status-strip is-detected" id="radar-status-strip">
+                <div class="radar-status-symbol" id="radar-status-symbol">◉</div>
+                <div>
+                  <div class="radar-insight-status" id="radar-insight-status">A radarképek betöltése folyamatban…</div>
+                  <div class="radar-insight-detail" id="radar-insight-detail">A Balkány körüli radarvisszhangokat elemezzük. A mozgásbecslés csak akkor jelenik meg, ha a képek alapján kiszámítható.</div>
+                </div>
+                <div class="radar-confidence-chip" id="radar-motion-confidence">ELEMZÉS FOLYAMATBAN</div>
+              </div>
+
+              <div class="radar-summary-grid">
+                <div class="radar-summary-card primary"><span class="radar-summary-label">Csapadéktömb távolsága</span><strong id="radar-insight-distance">--</strong><small>Radaros visszhangközéppont</small></div>
+                <div class="radar-summary-card"><span class="radar-summary-label">Becsült érkezés</span><strong id="radar-insight-eta">--</strong><small>Csak közeledő mozgásnál</small></div>
+                <div class="radar-summary-card"><span class="radar-summary-label">Órás modell-esély</span><strong id="radar-insight-pop">--</strong><small>Nem radaradat</small></div>
+                <div class="radar-summary-card"><span class="radar-summary-label">Következő ~60 perc</span><strong id="radar-insight-amount">--</strong><small id="radar-insight-amount-sub">A következő 60 perc modellösszege</small></div>
+              </div>
+
+              <div class="radar-nearest-panel" aria-live="polite">
+                <div class="radar-section-head">
+                  <div class="radar-section-title">📍 Legközelebbi észlelt csapadékpont</div>
+                  <div class="radar-section-subtitle">Pillanatnyi radar-képkocka</div>
+                </div>
+                <div class="radar-nearest-place-row">
+                  <div style="min-width:0;">
+                    <div class="radar-nearest-place-label">Legközelebbi térképi hely</div>
+                    <div class="radar-nearest-place-name" id="radar-nearest-place">Helynév azonosítása a koordináta alapján…</div>
+                  </div>
+                  <a class="radar-place-link" id="radar-place-link" href="https://www.openstreetmap.org/" target="_blank" rel="noopener">Térképen ↗</a>
+                </div>
+                <div class="radar-nearest-grid">
+                  <div class="radar-nearest-cell"><span>Balkánytól mért távolság</span><strong id="radar-nearest-distance">--</strong></div>
+                  <div class="radar-nearest-cell"><span>Radar-pixel koordinátája</span><strong id="radar-nearest-coords">--</strong></div>
+                  <div class="radar-nearest-cell"><span>Visszhang erőssége</span><strong id="radar-nearest-intensity">--</strong></div>
+                </div>
+                <div class="radar-nearest-note" id="radar-nearest-note">A koordináta a radar-pixel középpontja. A helynév a térképi adatbázis legközelebbi azonosított objektuma, nem házszám-pontos cím. A dBZ radar-visszaverődési érték, nem közvetlen mm/óra mérés.</div>
+              </div>
+
+              <div class="radar-model-panel">
+                <div class="radar-section-head">
+                  <div class="radar-section-title">☔ Modell-előrejelzés · Balkány</div>
+                  <div class="radar-section-subtitle">15 perces modell-lépték</div>
+                </div>
+                <div class="radar-model-grid">
+                  <div class="radar-model-window"><span>KÖVETKEZŐ 0–15 PERC</span><strong id="radar-model-0-15">--</strong><small id="radar-model-0-15-sub">Betöltés…</small></div>
+                  <div class="radar-model-window"><span>15–30 PERC</span><strong id="radar-model-15-30">--</strong><small id="radar-model-15-30-sub">Betöltés…</small></div>
+                  <div class="radar-model-window"><span>30–60 PERC</span><strong id="radar-model-30-60">--</strong><small id="radar-model-30-60-sub">Betöltés…</small></div>
+                </div>
+                <div class="radar-model-foot"><span id="radar-model-target">Ablak kezdete: most</span><span>Forrás: 15 perces modelladat</span></div>
+              </div>
+
+              <div class="radar-bottom-meta">
+                <span class="radar-meta-chip">Csapadéktípus: <strong id="radar-insight-type-chip">--</strong></span>
+                <span class="radar-meta-chip">Radaradat kora: <strong id="radar-insight-age">--</strong></span>
+                <span class="radar-meta-chip">Mozgás: <strong id="radar-insight-speed">--</strong></span>
+              </div>
+              <div class="radar-insight-foot" id="radar-insight-foot">A radarészlelés és a modell-előrejelzés külön adatforrás. A mozgásirány és az érkezési idő két képkocka összehasonlításán alapuló előzetes becslés, nem hivatalos riasztás.</div>
+            </section>
+          </div>
+        </div>
+
+        <div class="card">
           <div class="card-title"><span>🌱 TALAJ, LÁTÓTÁVOLSÁG & LÉGKÖRI EXTRÁK</span><span style="font-size:9px; color:var(--accent-cyan);">Balkányi talajszelvény</span></div>
           <div class="stats-grid" id="soil-atmos-panel">
             <div class="stat-card-box"><div class="stat-card-title">👁️ Látótávolság</div><div class="stat-card-val" id="extra-vis-val" style="color:var(--accent-blue)">--</div><div class="grid-subtext" id="extra-vis-sub">Köd- és párakontroll</div></div>
@@ -390,23 +574,6 @@
             <div class="life-card"><div class="life-lbl">🚗 Autómosás</div><div class="life-val" id="carwash-val" style="color:var(--accent-green)">Kiváló</div><div class="life-sub" id="carwash-sub">24h száraz ablak</div></div>
             <div class="life-card"><div class="life-lbl">🧺 Teregetés / Kint</div><div class="life-val" id="dry-val" style="color:var(--accent-blue)">Gyors száradás</div><div class="life-sub" id="dry-sub">Páratartalom alapján</div></div>
             <div class="life-card"><div class="life-lbl">💨 Szellőztetés</div><div class="life-val" id="vent-val" style="color:var(--accent-yellow)">Ajánlott</div><div class="life-sub" id="vent-sub">Friss, tiszta légtömeg</div></div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="radar-controls">
-            <div class="card-title" style="margin-bottom:0;"><span>🛰️ ÉLŐ RADAR & MŰHOLDTÉRKÉP (BALKÁNY)</span></div>
-            <button class="refresh-btn" id="radar-toggle-btn" onclick="toggleRadarMap()">🗺️ Térkép megnyitása</button>
-          </div>
-          <div id="radar-body" style="display:none;">
-            <div class="radar-layers">
-              <button class="radar-layer-btn active" data-layer="radar" onclick="setRadarLayer('radar', this)">🌧️ Esőradar</button>
-              <button class="radar-layer-btn" data-layer="satellite" onclick="setRadarLayer('satellite', this)">🛰️ Műhold</button>
-              <button class="radar-layer-btn" data-layer="wind" onclick="setRadarLayer('wind', this)">💨 Szél</button>
-              <button class="radar-layer-btn" data-layer="thunder" onclick="setRadarLayer('thunder', this)">⚡ Villámlás</button>
-              <button class="radar-layer-btn" data-layer="clouds" onclick="setRadarLayer('clouds', this)">☁️ Felhőzet</button>
-            </div>
-            <div class="radar-frame-wrap" id="radar-frame-wrap"></div>
           </div>
         </div>
 
@@ -494,8 +661,25 @@
     let chartInstance = null, isFetchingWeather = false, isFetchingForecast = false;
     let latestCurrentData = null, latestExtremes = null, cachedHourlyRaw = null, latestHistoryForChart = [];
     let latestFcMax = "--", latestFcMin = "--", sunTimesTable = {}, hasActualCurrentSky = false;
-    let activeModelLabel = "ICON-EU + ECMWF", radarOpen = false, currentRadarLayer = "radar";
+    let activeModelLabel = "ICON-EU + ECMWF", radarOpen = true, currentRadarLayer = "radar";
     let currentSkyCondition = { phrase: "Változóan felhős", emoji: "⛅", cloudCover: 40 };
+    // Balkány radar: RainViewer past frames + local optical echo-motion estimate; forecast amounts from Open-Meteo.
+    const BALKANY_RADAR_POINT = { lat: 47.77, lon: 21.86, name: "Balkány" };
+    let cachedMinutely15 = [], radarFrames = [], radarMap = null, radarOverlay = null, radarOverlayNext = null;
+    let radarOverlayFrameA = -1, radarOverlayFrameB = -1;
+    let radarFrameIndex = 0, radarPlaybackTimer = null, radarPlaybackLastTick = 0, radarRefreshTimer = null, leafletLoadPromise = null, radarBaseLayer = null, radarRefreshCountdownTimer = null;
+    let lastRadarTrack = null, lastRadarAnalysisAt = 0, radarMetadata = null, nearestRadarEcho = null;
+    // RainViewer Universal Blue RGBA palette (color scheme 2), published dBZ color table.
+    const RADAR_BLUE_PALETTE_HEX = [
+      '928871','9e9375','aa9e79','b6a97e','c2b482','cec087','d2c48b','d6c88f','dacc93','ded097',
+      '88ddee','6cd1eb','51c5e8','36bae5','1baee2','00a3e0','009ad5','0091ca','0088bf','007fb4',
+      '0077aa','0070a3','00699c','006295','005b8e','005588','005180','004e78','004a70','004768',
+      'ffee00','ffe000','ffd200','ffc500','ffb700','ffaa00','ff9f00','ff9500','ff8b00','ff8100',
+      'ff4400','f23600','e62800','d91b00','cd0d00','c10000','a80000','8f0000','760000','5d0000',
+      'ffaaff','ff9fff','ff95ff','ff8bff','ff81ff','ff77ff','ff6cff','ff62ff','ff58ff','ff4eff',
+      'ffffff'
+    ];
+    const RADAR_DBZ_BY_RGB = new Map(RADAR_BLUE_PALETTE_HEX.map((hex, i) => [parseInt(hex, 16), i + 5]));
 
     function isValid(val) { return val !== undefined && val !== null && val !== "" && val !== "N/A" && !isNaN(Number(val)); }
     function fmt(val, dec = 1) { return isValid(val) ? Number(val).toFixed(dec) : "N/A"; }
@@ -794,24 +978,737 @@
     }
 
     function buildWindyUrl(layer) {
-      return `https://embed.windy.com/embed2.html?lat=47.77&lon=21.86&detailLat=47.77&detailLon=21.86&width=650&height=400&zoom=8&level=surface&overlay=${encodeURIComponent(layer)}&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1`;
+      return `https://embed.windy.com/embed2.html?lat=${BALKANY_RADAR_POINT.lat}&lon=${BALKANY_RADAR_POINT.lon}&detailLat=${BALKANY_RADAR_POINT.lat}&detailLon=${BALKANY_RADAR_POINT.lon}&width=650&height=400&zoom=8&level=surface&overlay=${encodeURIComponent(layer)}&product=ecmwf&menu=&message=false&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1`;
     }
+
+    function buildWindyMapFrame(layer) {
+      const safeLayer = String(layer || 'wind').replace(/[^a-z0-9_-]/gi, '');
+      return `<div class="windy-map-fixed" role="group" aria-label="Balkány környéki, rögzített nagyítású térképréteg"><iframe id="windy-iframe" title="Windy ${safeLayer} térkép Balkány környékéről" src="${buildWindyUrl(safeLayer)}" loading="lazy" allowfullscreen></iframe><div class="windy-zoom-mask" aria-hidden="true"></div></div>`;
+    }
+
+    function ensureLeafletLoaded() {
+      if (window.L) return Promise.resolve(true);
+      if (leafletLoadPromise) return leafletLoadPromise;
+      leafletLoadPromise = new Promise(resolve => {
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        script.async = true;
+        script.onload = () => resolve(!!window.L);
+        script.onerror = () => resolve(false);
+        document.head.appendChild(script);
+      });
+      return leafletLoadPromise;
+    }
+
+    function updateRadarPlaybackControls() {
+      const controls = document.getElementById('radar-playback');
+      const slider = document.getElementById('radar-frame-slider');
+      if (controls) controls.style.display = radarFrames.length > 0 ? 'grid' : 'none';
+      const maxPosition = Math.max(0, radarFrames.length - 1);
+      const position = Math.max(0, Math.min(maxPosition, Number(radarFrameIndex) || 0));
+      if (slider) {
+        slider.min = '0'; slider.max = String(maxPosition); slider.step = '0.01';
+        slider.value = String(position);
+        slider.disabled = radarFrames.length < 2;
+      }
+      const timeEl = document.getElementById('radar-frame-time');
+      if (timeEl && radarFrames.length) {
+        const low = Math.min(Math.floor(position), radarFrames.length - 1);
+        const high = Math.min(low + 1, radarFrames.length - 1);
+        const part = position - low;
+        const t0 = radarFrames[low].time;
+        const t1 = radarFrames[high].time;
+        const timestamp = t0 + (t1 - t0) * part;
+        const dt = new Date(timestamp * 1000);
+        timeEl.textContent = `Időpont: ${dt.toLocaleTimeString('hu-HU', {hour:'2-digit', minute:'2-digit'})}`;
+      }
+    }
+
+    function stopBalkanyRadarPlayback() {
+      if (radarPlaybackTimer !== null) cancelAnimationFrame(radarPlaybackTimer);
+      radarPlaybackTimer = null;
+      radarPlaybackLastTick = 0;
+      const btn = document.getElementById('radar-play-toggle');
+      if (btn) btn.textContent = '▶ Lejátszás';
+    }
+
+    function toggleBalkanyRadarPlayback() {
+      if (radarPlaybackTimer !== null) { stopBalkanyRadarPlayback(); return; }
+      if (radarFrames.length < 2) return;
+      const btn = document.getElementById('radar-play-toggle');
+      if (btn) btn.textContent = 'Ⅱ Szünet';
+      radarFrameIndex = 0;
+      setBalkanyRadarFrame(radarFrameIndex);
+      const maxPosition = radarFrames.length - 1;
+      const playbackRate = 0.78; // valódi képkockák között kb. 1,28 s-os, finom átmenet
+      const tick = timestamp => {
+        if (!radarPlaybackLastTick) radarPlaybackLastTick = timestamp;
+        if (timestamp - radarPlaybackLastTick >= 32) {
+          const elapsed = Math.min(0.12, (timestamp - radarPlaybackLastTick) / 1000);
+          radarPlaybackLastTick = timestamp;
+          radarFrameIndex += elapsed * playbackRate;
+          if (radarFrameIndex >= maxPosition) radarFrameIndex = 0;
+          setBalkanyRadarFrame(radarFrameIndex);
+        }
+        radarPlaybackTimer = requestAnimationFrame(tick);
+      };
+      radarPlaybackTimer = requestAnimationFrame(tick);
+    }
+
+    function makeBalkanyRadarLayer(frame, initialOpacity = 0) {
+      const tileUrl = `${radarMetadata.host}${frame.path}/256/{z}/{x}/{y}/2/1_1.png`;
+      return L.tileLayer(tileUrl, {
+        tileSize: 256, minZoom: 4, maxZoom: 9, maxNativeZoom: 7,
+        opacity: initialOpacity, crossOrigin: 'anonymous',
+        attribution: '<a href="https://www.rainviewer.com/" target="_blank" rel="noopener">RainViewer</a>',
+        keepBuffer: 2, updateWhenIdle: true, updateWhenZooming: false,
+        interactive: false
+      });
+    }
+
+    function setBalkanyRadarFrame(position) {
+      if (!radarFrames.length || !radarMap || !window.L) return;
+      const maxPosition = radarFrames.length - 1;
+      radarFrameIndex = Math.max(0, Math.min(maxPosition, Number(position) || 0));
+
+      const lowerIndex = radarFrames.length === 1 ? 0 : Math.min(Math.floor(radarFrameIndex), radarFrames.length - 2);
+      const upperIndex = radarFrames.length === 1 ? 0 : lowerIndex + 1;
+      const blend = radarFrames.length === 1 ? 0 : Math.max(0, Math.min(1, radarFrameIndex - lowerIndex));
+      const opacity = 0.78;
+
+      // Reuse the shared frame when the slider crosses a 10-minute boundary.
+      const existing = new Map();
+      if (radarOverlay && radarOverlayFrameA >= 0) existing.set(radarOverlayFrameA, radarOverlay);
+      if (radarOverlayNext && radarOverlayFrameB >= 0) existing.set(radarOverlayFrameB, radarOverlayNext);
+      let layerA = existing.get(lowerIndex) || null;
+      let layerB = upperIndex === lowerIndex ? null : (existing.get(upperIndex) || null);
+
+      for (const [frameId, layer] of existing.entries()) {
+        if (layer !== layerA && layer !== layerB) radarMap.removeLayer(layer);
+      }
+      if (!layerA) {
+        layerA = makeBalkanyRadarLayer(radarFrames[lowerIndex], 0);
+        layerA.addTo(radarMap);
+      }
+      if (upperIndex !== lowerIndex && !layerB) {
+        layerB = makeBalkanyRadarLayer(radarFrames[upperIndex], 0);
+        layerB.addTo(radarMap);
+      }
+
+      radarOverlay = layerA;
+      radarOverlayFrameA = lowerIndex;
+      radarOverlayNext = layerB;
+      radarOverlayFrameB = layerB ? upperIndex : -1;
+      radarOverlay.setOpacity(opacity * (1 - blend));
+      if (radarOverlayNext) radarOverlayNext.setOpacity(opacity * blend);
+      updateRadarPlaybackControls();
+    }
+
+    function setBalkanyRadarMapTheme(dayLayer, nightLayer) {
+      if (!radarMap || !dayLayer || !nightLayer) return;
+      const hour = new Date().getHours();
+      const useNight = hour >= 19 || hour < 6;
+      const nextLayer = useNight ? nightLayer : dayLayer;
+      if (radarBaseLayer !== nextLayer) {
+        if (radarBaseLayer && radarMap.hasLayer(radarBaseLayer)) radarMap.removeLayer(radarBaseLayer);
+        nextLayer.addTo(radarMap); radarBaseLayer = nextLayer;
+      }
+      const tag = document.getElementById('radar-map-refresh-tag');
+      if (tag) tag.textContent = `${useNight ? 'Éjszakai' : 'Nappali'} térkép · frissítés 10 percenként`;
+    }
+
+    function initBalkanyRadarMap() {
+      const wrap = document.getElementById('radar-frame-wrap');
+      if (!wrap || !window.L) return false;
+      if (radarMap) { setTimeout(() => radarMap.invalidateSize(), 80); return true; }
+      wrap.innerHTML = '<div id="balkany-radar-map" role="img" aria-label="Balkány és környéke csapadékradar-térképe"></div>';
+      radarMap = L.map('balkany-radar-map', {
+        center: [BALKANY_RADAR_POINT.lat, BALKANY_RADAR_POINT.lon], zoom: 8,
+        minZoom: 8, maxZoom: 8, zoomControl: false,
+        scrollWheelZoom: false, doubleClickZoom: false, touchZoom: false,
+        boxZoom: false, keyboard: false, tap: true,
+        dragging: true, preferCanvas: true, fadeAnimation: true,
+        zoomAnimation: false, markerZoomAnimation: false
+      });
+
+      // More detailed street/settlement map instead of the blocked public OSM tile endpoint.
+      const dayMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        minZoom: 4, maxZoom: 18, maxNativeZoom: 18,
+        attribution: 'Tiles &copy; Esri &mdash; Sources: Esri, HERE, Garmin, USGS, Intermap, INCREMENT P, NRCAN, Esri Japan, METI, Esri China (Hong Kong), &copy; OpenStreetMap contributors, and the GIS User Community',
+        updateWhenIdle: true, keepBuffer: 2, crossOrigin: false
+      });
+      const nightMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        minZoom: 4, maxZoom: 18, maxNativeZoom: 18,
+        attribution: 'Tiles &copy; Esri &mdash; Dark Gray Canvas', updateWhenIdle:true, keepBuffer:2
+      });
+      radarBaseLayer = null;
+      setBalkanyRadarMapTheme(dayMap, nightMap);
+      const LegendControl = L.Control.extend({ onAdd: function(){ const d=L.DomUtil.create('div','radar-map-legend'); d.innerHTML='<div class="radar-map-legend-title">CSAPADÉKINTENZITÁS · RADAR</div><div class="radar-map-legend-bar"></div><div class="radar-map-legend-labels"><span>Gyenge</span><span>Közepes</span><span>Erős</span><span>Intenzív</span></div>'; L.DomEvent.disableClickPropagation(d); return d; }});
+      new LegendControl({position:'bottomright'}).addTo(radarMap);
+      const RefreshControl = L.Control.extend({ onAdd: function(){ const d=L.DomUtil.create('div','radar-map-refresh-tag'); d.id='radar-map-refresh-tag'; d.textContent='Frissítés: 10 percenként'; return d; }});
+      new RefreshControl({position:'topleft'}).addTo(radarMap);
+
+      const markerIcon = L.divIcon({
+        className: '',
+        html: '<div class="radar-map-marker-label"><span>●</span>BALKÁNY</div>',
+        iconSize: [86, 30], iconAnchor: [43, 15]
+      });
+      L.marker([BALKANY_RADAR_POINT.lat, BALKANY_RADAR_POINT.lon], {
+        icon: markerIcon, keyboard: false, interactive: true, zIndexOffset: 1000
+      }).addTo(radarMap).bindTooltip('Balkány · PWS mérési pont', {permanent: false, direction: 'top'});
+      L.circle([BALKANY_RADAR_POINT.lat, BALKANY_RADAR_POINT.lon], {
+        radius: 25000, color: '#38bdf8', weight: 1.2, opacity: .5,
+        fill: false, dashArray: '4 5', interactive: false
+      }).addTo(radarMap);
+      setTimeout(() => radarMap && radarMap.invalidateSize(), 120);
+      return true;
+    }
+
+    async function loadBalkanyRadarMetadata() {
+      const response = await fetch('https://api.rainviewer.com/public/weather-maps.json', {cache:'no-store'});
+      if (!response.ok) throw new Error(`RainViewer API: ${response.status}`);
+      const data = await response.json();
+      const frames = data && data.radar && Array.isArray(data.radar.past) ? data.radar.past : [];
+      if (!data.host || !frames.length) throw new Error('A RainViewer most nem adott vissza radarképkockákat.');
+      radarMetadata = data;
+      radarFrames = frames.slice(-13);
+      radarFrameIndex = radarFrames.length - 1;
+      return radarFrames;
+    }
+
+    function radarWorldTilePoint(lat, lon, zoom) {
+      const n = Math.pow(2, zoom), rad = lat * Math.PI / 180;
+      return {x:(lon + 180) / 360 * n, y:(1 - Math.asinh(Math.tan(rad)) / Math.PI) / 2 * n};
+    }
+    function radarWorldPixelToLatLon(px, py, zoom) {
+      const n = Math.pow(2, zoom) * 256;
+      const lon = px / n * 360 - 180;
+      const merc = Math.PI * (1 - 2 * py / n);
+      const lat = Math.atan(Math.sinh(merc)) * 180 / Math.PI;
+      return {lat, lon};
+    }
+    function radarDistanceKm(a, b) {
+      const toRad = v => v * Math.PI / 180, R = 6371;
+      const dLat = toRad(b.lat - a.lat), dLon = toRad(b.lon - a.lon);
+      const h = Math.sin(dLat/2)**2 + Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*Math.sin(dLon/2)**2;
+      return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+    }
+    function radarBearing(a, b) {
+      const toRad = v => v * Math.PI / 180, toDeg = v => v * 180 / Math.PI;
+      const p1 = toRad(a.lat), p2 = toRad(b.lat), dl = toRad(b.lon - a.lon);
+      const y = Math.sin(dl) * Math.cos(p2);
+      const x = Math.cos(p1)*Math.sin(p2) - Math.sin(p1)*Math.cos(p2)*Math.cos(dl);
+      return (toDeg(Math.atan2(y,x)) + 360) % 360;
+    }
+    function radarAngleDiff(a, b) { return Math.abs(((a - b + 540) % 360) - 180); }
+    function radarDirectionText(deg) {
+      const labels = ['É','ÉK','K','DK','D','DNy','Ny','ÉNy'];
+      return labels[Math.round((((deg % 360) + 360) % 360) / 45) % 8];
+    }
+    function radarFormatEta(minutes) {
+      if (!Number.isFinite(minutes)) return 'nem becsülhető';
+      if (minutes < 60) return `kb. ${Math.max(5, Math.round(minutes / 5) * 5)} perc`;
+      const h = Math.floor(minutes / 60), m = Math.round((minutes % 60) / 5) * 5;
+      return m ? `kb. ${h} óra ${m} perc` : `kb. ${h} óra`;
+    }
+
+    async function loadRadarMosaic(frame, zoom = 7) {
+      const p = radarWorldTilePoint(BALKANY_RADAR_POINT.lat, BALKANY_RADAR_POINT.lon, zoom);
+      const cx = Math.floor(p.x), cy = Math.floor(p.y), size = 256, canvas = document.createElement('canvas');
+      canvas.width = size * 3; canvas.height = size * 3;
+      const ctx = canvas.getContext('2d', {willReadFrequently:true});
+      if (!ctx) throw new Error('A böngésző nem támogatja a radarkép elemzését.');
+      let loaded = 0;
+      const requests = [];
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const tx = cx + dx, ty = cy + dy;
+        // Non-smoothed tile: exact palette colors make dBZ decoding reproducible.
+        const url = `${radarMetadata.host}${frame.path}/${size}/${zoom}/${tx}/${ty}/2/0_1.png`;
+        requests.push((async () => {
+          const res = await fetch(url, {mode:'cors', cache:'force-cache'});
+          if (!res.ok) throw new Error(`Radarcsempe hiba: ${res.status}`);
+          const blob = await res.blob();
+          let bitmap;
+          if ('createImageBitmap' in window) bitmap = await createImageBitmap(blob);
+          else {
+            const objectUrl = URL.createObjectURL(blob);
+            try { bitmap = await new Promise((resolve, reject) => { const img = new Image(); img.onload = () => resolve(img); img.onerror = reject; img.src = objectUrl; }); }
+            finally { URL.revokeObjectURL(objectUrl); }
+          }
+          ctx.drawImage(bitmap, (dx + 1) * size, (dy + 1) * size, size, size);
+          if (bitmap.close) bitmap.close();
+          loaded++;
+        })());
+      }
+      const settled = await Promise.allSettled(requests);
+      if (loaded < 3) throw new Error('A radarképcsempék nem tölthetők le a mozgás elemzéséhez.');
+      const image = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      return {image, originX:(cx - 1) * size, originY:(cy - 1) * size, zoom, loaded, failed:settled.filter(x => x.status === 'rejected').length};
+    }
+
+    function radarPixelDbz(r, g, b, a) {
+      if (a < 48) return null;
+      const rgb = (r << 16) | (g << 8) | b;
+      const dbz = RADAR_DBZ_BY_RGB.get(rgb);
+      return dbz === undefined ? null : dbz;
+    }
+
+    function radarIntensityLabel(dbz) {
+      if (!Number.isFinite(dbz)) return 'Nem besorolható';
+      if (dbz < 20) return 'Gyenge radarjel';
+      if (dbz < 30) return 'Mérsékelt';
+      if (dbz < 40) return 'Erős';
+      if (dbz < 50) return 'Nagyon erős';
+      return 'Rendkívül erős';
+    }
+
+    function radarFormatCoordinate(value, positive, negative) {
+      return `${Math.abs(value).toFixed(5).replace('.', ',')}° ${value >= 0 ? positive : negative}`;
+    }
+
+    function detectRadarEchoCells(mosaic) {
+      const {image, originX, originY, zoom} = mosaic, w = image.width, h = image.height, rgba = image.data, total = w*h;
+      const active = new Uint8Array(total), dbzGrid = new Int8Array(total), visited = new Uint8Array(total), queue = new Int32Array(total);
+      dbzGrid.fill(-1);
+      for (let i = 0, j = 0; i < total; i++, j += 4) {
+        const dbz = radarPixelDbz(rgba[j], rgba[j+1], rgba[j+2], rgba[j+3]);
+        // Ignore very weak echoes below 5 dBZ; retain the exact decoded reflectivity for every candidate pixel.
+        if (dbz !== null && dbz >= 5) { active[i] = 1; dbzGrid[i] = dbz; }
+      }
+      const cells = [], town = BALKANY_RADAR_POINT;
+      for (let start = 0; start < total; start++) {
+        if (!active[start] || visited[start]) continue;
+        let head = 0, tail = 0, sx = 0, sy = 0, dbzSum = 0, maxDbz = -1;
+        let closestDistanceKm = Infinity, closestLat = null, closestLon = null, closestDbz = null;
+        queue[tail++] = start; visited[start] = 1;
+        while (head < tail) {
+          const idx = queue[head++], x = idx % w, y = (idx / w) | 0, dbz = dbzGrid[idx];
+          sx += x; sy += y; dbzSum += dbz; if (dbz > maxDbz) maxDbz = dbz;
+          // Pixel-center coordinates are the most precise location the raster data can support.
+          const ll = radarWorldPixelToLatLon(originX + x + 0.5, originY + y + 0.5, zoom);
+          const distance = radarDistanceKm(town, ll);
+          if (distance < closestDistanceKm) {
+            closestDistanceKm = distance; closestLat = ll.lat; closestLon = ll.lon; closestDbz = dbz;
+          }
+          for (let oy = -1; oy <= 1; oy++) for (let ox = -1; ox <= 1; ox++) {
+            if (!ox && !oy) continue;
+            const nx = x + ox, ny = y + oy;
+            if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+            const ni = ny*w + nx;
+            if (active[ni] && !visited[ni]) { visited[ni] = 1; queue[tail++] = ni; }
+          }
+        }
+        if (tail < 5 || tail > 80000 || closestDistanceKm > 270) continue;
+        const centroid = radarWorldPixelToLatLon(originX + sx / tail + 0.5, originY + sy / tail + 0.5, zoom);
+        const distance = radarDistanceKm(town, centroid);
+        cells.push({
+          lat:centroid.lat, lon:centroid.lon, px:sx/tail, py:sy/tail, pixels:tail, distance,
+          closestLat, closestLon, closestDistanceKm, closestDbz, maxDbz, meanDbz:dbzSum/tail
+        });
+      }
+      // Nearest by the actual closest echo pixel, not the cloud/echo centroid.
+      return cells.sort((a,b) => a.closestDistanceKm - b.closestDistanceKm).slice(0, 30);
+    }
+
+    function matchRadarEchoMovement(previousCells, currentCells, minutesBetween) {
+      if (!previousCells.length || !currentCells.length || !minutesBetween || minutesBetween <= 0) return [];
+      const used = new Set(), tracks = [];
+      currentCells.forEach(cell => {
+        let best = null, bestDist = Infinity, bestIdx = -1;
+        previousCells.forEach((old, idx) => {
+          if (used.has(idx)) return;
+          const d = radarDistanceKm(old, cell);
+          if (d < bestDist && d <= 48) { best = old; bestDist = d; bestIdx = idx; }
+        });
+        if (!best) return;
+        used.add(bestIdx);
+        const speed = bestDist * 60 / minutesBetween;
+        if (speed < 3 || speed > 125) return;
+        const motionBearing = radarBearing(best, cell);
+        const toTownBearing = radarBearing(cell, BALKANY_RADAR_POINT);
+        const angle = radarAngleDiff(motionBearing, toTownBearing);
+        const approachSpeed = speed * Math.cos(angle * Math.PI / 180);
+        const distance = radarDistanceKm(cell, BALKANY_RADAR_POINT);
+        const etaMin = approachSpeed > 0 ? distance / approachSpeed * 60 : Infinity;
+        tracks.push({cell, speed, motionBearing, sourceBearing:radarBearing(BALKANY_RADAR_POINT, cell), angle, approachSpeed, distance, etaMin, approaching:angle <= 60 && approachSpeed >= 5 && etaMin >= 3 && etaMin <= 360});
+      });
+      return tracks.sort((a,b) => (a.approaching ? a.etaMin : Infinity) - (b.approaching ? b.etaMin : Infinity) || a.distance - b.distance);
+    }
+
+    function getBalkanyModelWindow(etaMinutes = 0) {
+      const now = Date.now();
+      const target = now + Math.max(0, Number(etaMinutes) || 0) * 60000;
+      const rows = Array.isArray(cachedMinutely15) ? cachedMinutely15.filter(row => row && Number.isFinite(row.epoch)).slice().sort((a,b) => a.epoch - b.epoch) : [];
+      let startIndex = rows.findIndex(row => row.epoch >= target - 2 * 60000);
+      if (startIndex < 0) startIndex = rows.findIndex(row => row.epoch >= now - 2 * 60000);
+      if (startIndex < 0) startIndex = rows.length;
+
+      const sumField = (group, field) => {
+        const vals = group.map(row => row[field]).filter(isValid).map(Number).filter(Number.isFinite);
+        return vals.length ? vals.reduce((a,b) => a + Math.max(0,b), 0) : null;
+      };
+      const summarize = (group) => {
+        const precipitation = sumField(group, 'precipitation');
+        const rain = sumField(group, 'rain');
+        const snow = sumField(group, 'snowfall');
+        const codes = group.map(row => Number(row.weatherCode)).filter(Number.isFinite);
+        let type = 'Nincs érvényes modelladat';
+        if (rain !== null && snow !== null && rain > 0.02 && snow > 0.02) type = 'Vegyes eső / hó';
+        else if ((snow !== null && snow > 0.02) || codes.some(code => [71,73,75,77,85,86].includes(Math.round(code)))) type = 'Havazás';
+        else if ((rain !== null && rain > 0.02) || (precipitation !== null && precipitation > 0.03)) type = 'Eső / zápor';
+        else if (precipitation !== null || rain !== null || snow !== null) type = 'Számottevő csapadék nem várható';
+        const valid = precipitation !== null || rain !== null || snow !== null;
+        let amount = '--';
+        if (valid) {
+          if (snow !== null && snow > 0.02 && rain !== null && rain > 0.02) amount = `${rain.toFixed(1).replace('.', ',')} mm + ${snow.toFixed(1).replace('.', ',')} cm`;
+          else if (snow !== null && snow > 0.02) amount = `${snow.toFixed(1).replace('.', ',')} cm hó`;
+          else if (rain !== null && rain > 0.02) amount = `${rain.toFixed(1).replace('.', ',')} mm eső`;
+          else if (precipitation !== null && precipitation > 0.02) amount = `${precipitation.toFixed(1).replace('.', ',')} mm csapadék`;
+          else amount = '0,0 mm';
+        }
+        return { precipitation, rain, snow, type, amount, valid, rows:group.length };
+      };
+
+      const b1 = summarize(rows.slice(startIndex, startIndex + 1));
+      const b2 = summarize(rows.slice(startIndex + 1, startIndex + 2));
+      const b3 = summarize(rows.slice(startIndex + 2, startIndex + 4));
+      const total = summarize(rows.slice(startIndex, startIndex + 4));
+
+      let nearestHour = null, hourDiff = Infinity;
+      if (Array.isArray(cachedHourlyRaw)) cachedHourlyRaw.forEach(row => {
+        const rowEpoch = new Date(row.epoch || row.date).getTime();
+        if (!Number.isFinite(rowEpoch) || rowEpoch < now - 5 * 60000) return;
+        const diff = Math.abs(rowEpoch - target);
+        if (diff < hourDiff) { hourDiff = diff; nearestHour = row; }
+      });
+      const probability = nearestHour && isValid(nearestHour.pop) ? Math.round(Number(nearestHour.pop)) : null;
+      const firstRow = rows[startIndex];
+      return {
+        type: total.type,
+        amount: total.amount,
+        probability,
+        rain: total.rain,
+        snow: total.snow,
+        precipitation: total.precipitation,
+        validRows: total.valid,
+        time: firstRow ? new Date(firstRow.epoch) : new Date(target),
+        nearestHour,
+        buckets: [b1,b2,b3],
+        total
+      };
+    }
+
+    let radarPlaceLookupKey = '', radarPlaceLookupInFlight = null, radarPlaceLastRequestAt = 0;
+    const RADAR_PLACE_CACHE_PREFIX = 'balkany_radar_place_v1_';
+
+    function radarPlaceCacheKey(lat, lon) { return `${Number(lat).toFixed(3)}_${Number(lon).toFixed(3)}`; }
+    function getRadarPlaceLabel(data) {
+      const a = data && data.address ? data.address : {};
+      const locality = a.village || a.town || a.city || a.hamlet || a.suburb || a.municipality || a.county || '';
+      const road = a.road || a.pedestrian || a.path || '';
+      if (road && locality) return `${road}, ${locality}`;
+      return road || locality || (data && data.name) || '';
+    }
+    async function resolveRadarPlaceName(lat, lon) {
+      const placeEl = document.getElementById('radar-nearest-place');
+      const linkEl = document.getElementById('radar-place-link');
+      if (!placeEl || !Number.isFinite(Number(lat)) || !Number.isFinite(Number(lon))) return;
+      const key = radarPlaceCacheKey(lat, lon);
+      const mapUrl = `https://www.openstreetmap.org/?mlat=${encodeURIComponent(lat)}&mlon=${encodeURIComponent(lon)}#map=16/${encodeURIComponent(lat)}/${encodeURIComponent(lon)}`;
+      if (linkEl) linkEl.href = mapUrl;
+      if (key === radarPlaceLookupKey && placeEl.textContent && placeEl.textContent !== 'Helynév azonosítása…') return;
+      radarPlaceLookupKey = key;
+      const cacheKey = RADAR_PLACE_CACHE_PREFIX + key;
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.label) { placeEl.textContent = parsed.label; return; }
+        }
+      } catch (e) {}
+      placeEl.textContent = 'Helynév azonosítása…';
+      if (radarPlaceLookupInFlight) {
+        try { await radarPlaceLookupInFlight; } catch (e) {}
+        if (radarPlaceLookupKey !== key) return;
+      }
+      const wait = Math.max(0, 1100 - (Date.now() - radarPlaceLastRequestAt));
+      if (wait) await new Promise(resolve => setTimeout(resolve, wait));
+      radarPlaceLastRequestAt = Date.now();
+      const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=17&addressdetails=1&accept-language=hu`;
+      radarPlaceLookupInFlight = fetch(url, {headers:{'Accept':'application/json'}, cache:'force-cache'})
+        .then(response => { if (!response.ok) throw new Error(`Helynév-szolgáltatás: ${response.status}`); return response.json(); });
+      try {
+        const result = await radarPlaceLookupInFlight;
+        if (radarPlaceLookupKey !== key) return;
+        const label = getRadarPlaceLabel(result);
+        if (label) {
+          placeEl.textContent = `${label} közelében`;
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify({label:`${label} közelében`, savedAt:Date.now()}));
+            const keys = [];
+            for (let i=0; i<localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(RADAR_PLACE_CACHE_PREFIX)) keys.push(k); }
+            if (keys.length > 240) keys.slice(0, keys.length - 240).forEach(k => localStorage.removeItem(k));
+          } catch (e) {}
+        } else placeEl.textContent = 'Nincs pontosan azonosítható közeli helynév';
+      } catch (err) {
+        if (radarPlaceLookupKey === key) placeEl.textContent = 'A helynév most nem érhető el';
+        console.warn('Radar koordináta helynév-feloldása:', err);
+      } finally {
+        radarPlaceLookupInFlight = null;
+      }
+    }
+
+    function updateBalkanyRadarNearest(cell = nearestRadarEcho, radarAge = null, issue = '') {
+      const status = document.getElementById('radar-nearest-status');
+      const distanceEl = document.getElementById('radar-nearest-distance');
+      const coordsEl = document.getElementById('radar-nearest-coords');
+      const intensityEl = document.getElementById('radar-nearest-intensity');
+      const noteEl = document.getElementById('radar-nearest-note');
+      const placeEl = document.getElementById('radar-nearest-place');
+      const linkEl = document.getElementById('radar-place-link');
+      if (!distanceEl || !coordsEl || !intensityEl) return;
+      if (issue) {
+        if (status) status.textContent = 'A pillanatnyi radar-pixel elemzése nem érhető el';
+        distanceEl.textContent = 'Nincs adat'; coordsEl.textContent = 'Nincs adat'; intensityEl.textContent = 'Nincs adat';
+        if (placeEl) placeEl.textContent = 'A koordináta nem áll rendelkezésre';
+        if (linkEl) linkEl.style.display = 'none';
+        if (noteEl) noteEl.textContent = `${issue} A radarkép megjelenhet akkor is, ha a böngésző nem engedi a képkockák pixeladatainak kiolvasását.`;
+        return;
+      }
+      if (!cell) {
+        if (status) status.textContent = 'A legfrissebb képkockán nem találtunk azonosítható csapadékvisszhangot a vizsgált körzetben';
+        distanceEl.textContent = 'Nem észlelhető'; coordsEl.textContent = '—'; intensityEl.textContent = '—';
+        if (placeEl) placeEl.textContent = 'Nincs aktuális radar-pont';
+        if (linkEl) linkEl.style.display = 'none';
+        if (noteEl) noteEl.textContent = `A képkockán nem azonosítottunk a beállított küszöböt elérő visszhangot. Ez nem zárja ki a küszöb alatti vagy a radarlefedettség korlátai miatt nem észlelhető csapadékot. A képkocka kora: ${radarAge === null ? 'ismeretlen' : `kb. ${Math.round(radarAge)} perc`}.`;
+        return;
+      }
+      const point = {lat:cell.closestLat, lon:cell.closestLon};
+      const bearing = radarBearing(BALKANY_RADAR_POINT, point);
+      const dbz = Number(cell.closestDbz);
+      if (status) status.textContent = `A legközelebbi azonosított radarjel ${cell.closestDistanceKm.toFixed(1).replace('.', ',')} km-re található Balkánytól, ${radarDirectionText(bearing)} irányban.`;
+      distanceEl.textContent = `${cell.closestDistanceKm.toFixed(1).replace('.', ',')} km · ${radarDirectionText(bearing)}`;
+      coordsEl.textContent = `${radarFormatCoordinate(cell.closestLat, 'É', 'D')} · ${radarFormatCoordinate(cell.closestLon, 'K', 'Ny')}`;
+      intensityEl.textContent = `${radarIntensityLabel(dbz)} · ${dbz} dBZ`;
+      if (placeEl) {
+        placeEl.textContent = 'Helynév azonosítása…';
+        if (linkEl) linkEl.style.display = 'inline-flex';
+        resolveRadarPlaceName(cell.closestLat, cell.closestLon);
+      }
+      if (noteEl) {
+        const ageText = radarAge === null ? 'a képkocka kora nem ismert' : `a képkocka kb. ${Math.round(radarAge)} perce készült`;
+        noteEl.textContent = `A koordináta a legközelebbi azonosított radar-pixel középpontja; a térbeli pontosságot a képkocka felbontása korlátozza. A teljes csapadéktömb legerősebb visszhangja: ${cell.maxDbz} dBZ. A dBZ visszaverődési érték, nem közvetlen mm/óra mérés. ${ageText}. A helynév a térképi adatbázis legközelebbi névvel ellátott objektumát jelzi. Helynévforrás: © OpenStreetMap közreműködők (Nominatim).`;
+      }
+    }
+
+    function updateBalkanyRadarInsight(track = lastRadarTrack, radarAge = null, issue = '') {
+      const status = document.getElementById('radar-insight-status');
+      const detail = document.getElementById('radar-insight-detail');
+      const distanceEl = document.getElementById('radar-insight-distance');
+      const etaEl = document.getElementById('radar-insight-eta');
+      const popEl = document.getElementById('radar-insight-pop');
+      const typeEl = document.getElementById('radar-insight-type');
+      const amountEl = document.getElementById('radar-insight-amount');
+      const ageEl = document.getElementById('radar-insight-age');
+      const stamp = document.getElementById('radar-analysis-stamp');
+      const strip = document.getElementById('radar-status-strip');
+      const symbol = document.getElementById('radar-status-symbol');
+      const confidence = document.getElementById('radar-motion-confidence');
+      const speed = document.getElementById('radar-insight-speed');
+      if (!status || !detail) return;
+      const eta = track && track.approaching ? track.etaMin : 0;
+      const model = getBalkanyModelWindow(eta);
+      if (strip) strip.className = 'radar-status-strip ' + (issue ? 'is-unavailable' : track && track.approaching ? 'is-approaching' : track ? 'is-detected' : 'is-clear');
+      if (symbol) symbol.textContent = issue ? '!' : track && track.approaching ? '↘' : track ? '◉' : '✓';
+      if (confidence) confidence.textContent = issue ? 'RADARHIBA' : track ? 'ELŐZETES · 2 KÉPKOCKA' : 'NINCS IGAZOLT MOZGÁS';
+      if (speed) speed.textContent = track && Number.isFinite(track.speed) ? `${Math.round(track.speed)} km/h` : 'Nem becsülhető';
+
+      if (track && track.approaching) {
+        status.textContent = 'Csapadéktömb közeledik Balkány felé';
+        detail.textContent = `A követett visszhangközéppont kb. ${Math.round(track.distance)} km-re van, ${radarDirectionText(track.sourceBearing)} felől. A két legfrissebb képkocka alapján számított sebesség ${Math.round(track.speed)} km/h; a becsült érkezési idő csak tájékoztató jellegű.`;
+        if (distanceEl) distanceEl.textContent = `${Math.round(track.distance)} km · ${radarDirectionText(track.sourceBearing)}`;
+        if (etaEl) etaEl.textContent = radarFormatEta(track.etaMin);
+      } else if (track) {
+        status.textContent = 'Radarjel észlelhető, de nem igazolt a Balkány felé tartó mozgás';
+        detail.textContent = `A legközelebbi követett visszhangközéppont kb. ${Math.round(track.distance)} km-re található, ${radarDirectionText(track.sourceBearing)} irányban. A jelenlegi két képkocka alapján érkezési idő nem adható meg megbízhatóan.`;
+        if (distanceEl) distanceEl.textContent = `${Math.round(track.distance)} km · ${radarDirectionText(track.sourceBearing)}`;
+        if (etaEl) etaEl.textContent = 'Nem becsülhető';
+      } else if (issue) {
+        status.textContent = 'A radaros mozgáskövetés jelenleg nem érhető el';
+        detail.textContent = `${issue} A modell-előrejelzés ettől függetlenül megjelenhet, ha betöltődött.`;
+        if (distanceEl) distanceEl.textContent = 'Nincs adat';
+        if (etaEl) etaEl.textContent = 'Nincs adat';
+      } else {
+        status.textContent = 'Most nem látható igazoltan közeledő csapadéktömb';
+        detail.textContent = 'A legfrissebb elemzett képkockákon nem találtunk olyan összefüggő radarvisszhangot, amelynek mozgása egyértelműen Balkány felé mutatna.';
+        if (distanceEl) distanceEl.textContent = 'Nincs közeledő cella';
+        if (etaEl) etaEl.textContent = '—';
+      }
+      if (popEl) popEl.textContent = model.probability === null ? '--' : `${model.probability}%`;
+      if (typeEl) typeEl.textContent = model.type;
+      const typeChip = document.getElementById('radar-insight-type-chip');
+      if (typeChip) typeChip.textContent = model.type;
+      if (amountEl) amountEl.textContent = model.validRows ? model.amount : '--';
+      const amountSub = document.getElementById('radar-insight-amount-sub');
+      if (amountSub) amountSub.textContent = track && track.approaching ? 'A becsült érkezés utáni 60 perc modellösszege' : 'A következő 60 perc modellösszege';
+      if (ageEl) ageEl.textContent = radarAge === null ? '--' : `${Math.max(0, Math.round(radarAge))} perc`;
+      if (stamp) stamp.textContent = new Date().toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'});
+
+      const bucketIds = ['radar-model-0-15','radar-model-15-30','radar-model-30-60'];
+      const bucketSubs = ['radar-model-0-15-sub','radar-model-15-30-sub','radar-model-30-60-sub'];
+      model.buckets.forEach((bucket, i) => {
+        const valueEl = document.getElementById(bucketIds[i]);
+        const subEl = document.getElementById(bucketSubs[i]);
+        if (valueEl) valueEl.textContent = bucket.valid ? bucket.amount : 'Nincs adat';
+        if (subEl) subEl.textContent = bucket.valid ? bucket.type : 'Ehhez az időablakhoz nincs adat';
+      });
+      const targetEl = document.getElementById('radar-model-target');
+      if (targetEl) targetEl.textContent = `Ablak kezdete: ${model.time.toLocaleTimeString('hu-HU',{hour:'2-digit',minute:'2-digit'})}${track && track.approaching ? ' · érkezéshez igazítva' : ' · mosttól'}`;
+
+      const foot = document.getElementById('radar-insight-foot');
+      if (foot) {
+        const modelLine = model.validRows
+          ? `A modellkártyák külön mutatják a 0–15, 15–30 és 30–60 perces időablakokat. A teljes mennyiség az első négy 15 perces modellérték összege; az órás valószínűség külön, órás modelladatból származik.`
+          : `A 15 perces modellrészlet nem érhető el vagy nem tartalmaz érvényes értéket; hiányzó mennyiséget nem helyettesítünk becsléssel.`;
+        foot.textContent = `Radarészlelés: RainViewer legfrissebb múltbeli képkockája. Mozgásbecslés: a két legutóbbi képkocka összevetése, ezért előzetes és bizonytalan. ${modelLine} A radar-ETA nem hivatalos riasztás.`;
+      }
+    }
+
+    async function analyzeBalkanyRadarMovement(frames) {
+      if (!frames || frames.length < 2 || !radarMetadata) {
+        lastRadarTrack = null; nearestRadarEcho = null;
+        updateBalkanyRadarNearest(null, null, 'Nincs elegendő radar-képkocka a pixelalapú helymeghatározáshoz.');
+        updateBalkanyRadarInsight(null, null, 'Nincs elegendő múltbeli radar-képkocka az iránybecsléshez.'); return;
+      }
+      try {
+        const older = frames[frames.length - 2], latest = frames[frames.length - 1];
+        const [oldMosaic, newMosaic] = await Promise.all([loadRadarMosaic(older), loadRadarMosaic(latest)]);
+        const oldCells = detectRadarEchoCells(oldMosaic), newCells = detectRadarEchoCells(newMosaic);
+        const dtMin = (latest.time - older.time) / 60;
+        const tracks = matchRadarEchoMovement(oldCells, newCells, dtMin);
+        const nearestUntracked = newCells[0] ? {
+          cell:newCells[0], distance:newCells[0].distance,
+          sourceBearing:radarBearing(BALKANY_RADAR_POINT, newCells[0]), approaching:false
+        } : null;
+        nearestRadarEcho = newCells[0] || null;
+        lastRadarTrack = tracks.find(t => t.approaching) || tracks[0] || nearestUntracked;
+        lastRadarAnalysisAt = Date.now();
+        const radarAge = Math.max(0, (Date.now() - latest.time * 1000) / 60000);
+        updateBalkanyRadarNearest(nearestRadarEcho, radarAge, '');
+        updateBalkanyRadarInsight(lastRadarTrack, radarAge, '');
+      } catch (err) {
+        console.warn('Balkány radar mozgáselemzés:', err);
+        const issue = 'A radar-csempék pixelvizsgálata most nem sikerült (például hálózati vagy böngésző-CORS korlátozás miatt).';
+        updateBalkanyRadarNearest(null, null, issue);
+        updateBalkanyRadarInsight(lastRadarTrack, null, issue);
+      }
+    }
+
+    async function refreshBalkanyRadar(force = false) {
+      if (!radarOpen || currentRadarLayer !== 'radar') return;
+      try {
+        await loadBalkanyRadarMetadata();
+        setBalkanyRadarFrame(radarFrameIndex);
+        if (force || Date.now() - lastRadarAnalysisAt > 6 * 60 * 1000) await analyzeBalkanyRadarMovement(radarFrames);
+      } catch (err) {
+        console.warn('Balkány RainViewer betöltés:', err);
+        const wrap = document.getElementById('radar-frame-wrap');
+        if (wrap && !radarMap) wrap.innerHTML = `<div style="height:100%;display:flex;align-items:center;justify-content:center;padding:18px;text-align:center;color:#94a3b8;font-size:11px;">A RainViewer radarkép jelenleg nem érhető el. Próbáld meg később frissíteni.</div>`;
+        updateBalkanyRadarNearest(null, null, 'A RainViewer nem adott elérhető radarképkockát.');
+        updateBalkanyRadarInsight(lastRadarTrack, null, 'A RainViewer nem adott elérhető radarképkockát.');
+      }
+    }
+
+    function scheduleBalkanyMapRefresh() {
+      if (radarRefreshTimer) clearTimeout(radarRefreshTimer);
+      if (radarRefreshCountdownTimer) clearInterval(radarRefreshCountdownTimer);
+      const now = new Date();
+      const next = new Date(now);
+      next.setSeconds(0, 0);
+      next.setMinutes(Math.floor(now.getMinutes() / 10) * 10 + 10);
+      const delay = Math.max(1000, next.getTime() - now.getTime());
+      radarRefreshTimer = setTimeout(async () => {
+        if (!document.hidden && radarOpen) {
+          if (currentRadarLayer === 'radar') await refreshBalkanyRadar(true);
+          else {
+            const frame = document.getElementById('windy-iframe');
+            if (frame) { const src = frame.getAttribute('src'); frame.setAttribute('src', src); }
+          }
+          if (radarMap) {
+            // Nappali/éjszakai alaptérkép ellenőrzése minden frissítési fordulóban.
+            const hour = new Date().getHours();
+            const wantNight = hour >= 19 || hour < 6;
+            const targetUrl = wantNight
+              ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
+              : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}';
+            if (radarBaseLayer && radarBaseLayer._url !== targetUrl) {
+              const replacement = L.tileLayer(targetUrl, {minZoom:4,maxZoom:18,maxNativeZoom:18,updateWhenIdle:true,keepBuffer:2});
+              radarMap.removeLayer(radarBaseLayer); replacement.addTo(radarMap); radarBaseLayer = replacement;
+            }
+          }
+        }
+        scheduleBalkanyMapRefresh();
+      }, delay);
+    }
+
+    async function openBalkanyRainRadar() {
+      const ok = await ensureLeafletLoaded();
+      if (!ok) {
+        const wrap = document.getElementById('radar-frame-wrap');
+        if (wrap) wrap.innerHTML = '<div style="padding:20px;color:#cbd5e1;font-size:11px;text-align:center;">A térkép könyvtára nem töltődött be. A műhold-, szél- és egyéb térképrétegek továbbra is megnyithatók.</div>';
+        return;
+      }
+      if (initBalkanyRadarMap()) {
+        await refreshBalkanyRadar(true);
+        scheduleBalkanyMapRefresh();
+      }
+    }
+
     function toggleRadarMap() {
       radarOpen = !radarOpen;
       const body = document.getElementById('radar-body'), btn = document.getElementById('radar-toggle-btn'), wrap = document.getElementById('radar-frame-wrap');
       if (!body || !btn || !wrap) return;
       if (radarOpen) {
-        body.style.display = "block"; btn.innerText = "✖️ Térkép bezárása";
-        if (!wrap.querySelector('iframe')) wrap.innerHTML = `<iframe id="windy-iframe" src="${buildWindyUrl(currentRadarLayer)}" loading="lazy" allowfullscreen></iframe>`;
-      } else { body.style.display = "none"; btn.innerText = "🗺️ Térkép megnyitása"; }
+        body.style.display = 'block'; btn.innerText = '✖️ Térkép bezárása';
+        if (currentRadarLayer === 'radar') openBalkanyRainRadar();
+        else if (!wrap.querySelector('iframe')) wrap.innerHTML = buildWindyMapFrame(currentRadarLayer);
+        scheduleBalkanyMapRefresh();
+      } else {
+        body.style.display = 'none'; btn.innerText = '🌧️ Radarkép megnyitása';
+        stopBalkanyRadarPlayback();
+        if (radarRefreshTimer) clearTimeout(radarRefreshTimer);
+        radarRefreshTimer = null;
+      }
     }
+
     function setRadarLayer(layer, btnEl) {
       currentRadarLayer = layer;
       document.querySelectorAll('.radar-layer-btn').forEach(b => b.classList.remove('active'));
       if (btnEl) btnEl.classList.add('active');
       const wrap = document.getElementById('radar-frame-wrap');
-      if (wrap) wrap.innerHTML = `<iframe id="windy-iframe" src="${buildWindyUrl(layer)}" allowfullscreen></iframe>`;
+      stopBalkanyRadarPlayback();
+      const controls = document.getElementById('radar-playback');
+      if (controls) controls.style.display = 'none';
+      if (!wrap) return;
+      if (layer === 'radar') {
+        if (radarMap) {
+          radarMap.remove(); radarMap = null; radarOverlay = null; radarOverlayNext = null; radarOverlayFrameA = -1; radarOverlayFrameB = -1;
+          wrap.innerHTML = '<div id="balkany-radar-map" role="img" aria-label="Balkány környéki élő radartérkép"></div>';
+        }
+        if (radarOpen) openBalkanyRainRadar();
+      } else {
+        if (radarMap) { radarMap.remove(); radarMap = null; radarOverlay = null; radarOverlayNext = null; radarOverlayFrameA = -1; radarOverlayFrameB = -1; radarBaseLayer = null; }
+        wrap.innerHTML = buildWindyMapFrame(layer);
+      }
+      if (radarOpen) scheduleBalkanyMapRefresh();
     }
+
+    document.addEventListener('input', event => {
+      if (event.target && event.target.id === 'radar-frame-slider') {
+        stopBalkanyRadarPlayback();
+        setBalkanyRadarFrame(Number(event.target.value));
+      }
+    });
 
     function pickArr(section, key, suffix) {
       if (!section) return null;
@@ -884,7 +1781,7 @@
       if (isFetchingForecast) return;
       isFetchingForecast = true;
       try {
-        const baseParams = `latitude=47.77&longitude=21.86&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,is_day&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,is_day,visibility,soil_temperature_0cm,soil_temperature_6cm,soil_moisture_0_to_1cm,cape,freezing_level_height&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,wind_direction_10m_dominant,sunrise,sunset,et0_fao_evapotranspiration&forecast_days=10&timezone=auto`;
+        const baseParams = `latitude=47.77&longitude=21.86&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,cloud_cover,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m,is_day&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,is_day,visibility,soil_temperature_0cm,soil_temperature_6cm,soil_moisture_0_to_1cm,cape,freezing_level_height&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,wind_direction_10m_dominant,sunrise,sunset,et0_fao_evapotranspiration&forecast_days=10&minutely_15=precipitation,rain,snowfall,weather_code&forecast_minutely_15=24&timezone=auto`;
         let isMultiModel = true;
         let res = await fetch(`https://api.open-meteo.com/v1/forecast?${baseParams}&models=best_match,ecmwf_ifs`);
         if (!res.ok) { isMultiModel = false; res = await fetch(`https://api.open-meteo.com/v1/forecast?${baseParams}`); }
@@ -970,6 +1867,22 @@
           cachedHourlyRaw = hourlyList;
           try { localStorage.setItem(HOURLY_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: hourlyList })); } catch(e) {}
           renderUnifiedHourly(hourlyList);
+        }
+
+        if (data.minutely_15 && Array.isArray(data.minutely_15.time)) {
+          const m15 = data.minutely_15, mt = m15.time;
+          const p15a = pickArr(m15, 'precipitation', m1), p15b = pickArr(m15, 'precipitation', m2);
+          const r15a = pickArr(m15, 'rain', m1), r15b = pickArr(m15, 'rain', m2);
+          const s15a = pickArr(m15, 'snowfall', m1), s15b = pickArr(m15, 'snowfall', m2);
+          const c15a = pickArr(m15, 'weather_code', m1), c15b = pickArr(m15, 'weather_code', m2);
+          cachedMinutely15 = mt.map((time, i) => {
+            const date = new Date(time);
+            return { date, epoch: date.getTime(), precipitation: blendMetric(p15a ? p15a[i] : null, p15b ? p15b[i] : null, 0.55),
+              rain: blendMetric(r15a ? r15a[i] : null, r15b ? r15b[i] : null, 0.55),
+              snowfall: blendMetric(s15a ? s15a[i] : null, s15b ? s15b[i] : null, 0.55),
+              weatherCode: blendMetric(c15a ? c15a[i] : null, c15b ? c15b[i] : null, 0.55) };
+          });
+          updateBalkanyRadarInsight();
         }
 
         if (data.daily && data.daily.time) {
@@ -1094,6 +2007,7 @@
       }
       container.innerHTML = html;
       updateLifestylePanel(list, validIndices);
+      updateBalkanyRadarInsight();
     }
 
     function updateLifestylePanel(hourlyList, validIndices) {
@@ -1647,6 +2561,8 @@
       fetchAirQuality();
       fetchHungaroMetAlerts();
       fetchSpaceWeatherKp();
+      // A balkányi radarkép mostantól alapból látható; betöltés DOM-készenlétkor.
+      openBalkanyRainRadar();
 
       // 2 perces élő PWS frissítés (Open-Meteo marad a 10 perces ciklusban)
       setInterval(() => { if (!document.hidden) fetchFreshWeather(); }, 120000);
@@ -1662,6 +2578,7 @@
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
         updateAstronomyBalkany(); fetchFreshWeather(); fetchCompleteForecast(true); fetchAirQuality();
+        if (radarOpen) { if (currentRadarLayer === 'radar') refreshBalkanyRadar(true); scheduleBalkanyMapRefresh(); }
       }
     });
   </script>
