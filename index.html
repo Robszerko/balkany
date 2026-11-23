@@ -156,16 +156,8 @@
     .radar-section-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:9px; flex-wrap:wrap; }
     .radar-section-title { color:#dceeff; font-size:10px; font-weight:950; letter-spacing:.6px; text-transform:uppercase; }
     .radar-section-subtitle { color:#7f93ab; font-size:8px; font-weight:750; }
-    .radar-nearest-panel { margin-top:10px; padding:12px; border:1px solid rgba(56,189,248,.18); border-radius:14px; background:linear-gradient(135deg,rgba(5,27,45,.84),rgba(7,17,31,.78)); }
-    .radar-nearest-place-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 9px; padding:9px 10px; border-radius:10px; background:rgba(56,189,248,.07); border:1px solid rgba(56,189,248,.12); }
-    .radar-nearest-place-label { color:#829ab4; font-size:7.5px; text-transform:uppercase; letter-spacing:.65px; font-weight:950; }
-    .radar-nearest-place-name { color:#e0f2fe; font-size:12px; font-weight:950; margin-top:3px; line-height:1.25; overflow-wrap:anywhere; }
-    .radar-place-link { flex:0 0 auto; color:#7dd3fc; font-size:8px; font-weight:900; text-decoration:none; padding:6px 8px; border:1px solid rgba(56,189,248,.24); border-radius:8px; }
-    .radar-nearest-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
-    .radar-nearest-cell { min-width:0; padding:9px; border-radius:10px; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.07); }
     .radar-nearest-cell span { display:block; color:#8da2ba; font-size:7.5px; line-height:1.25; text-transform:uppercase; font-weight:900; letter-spacing:.3px; }
     .radar-nearest-cell strong { display:block; margin-top:5px; color:#f1f7ff; font-size:clamp(10px,2.2vw,13px); line-height:1.3; font-weight:950; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
-    .radar-nearest-note { margin-top:8px; color:#8293a9; font-size:8px; line-height:1.5; }
     .radar-model-panel { margin-top:10px; padding:12px; border:1px solid rgba(167,139,250,.2); border-radius:14px; background:linear-gradient(135deg,rgba(43,31,75,.28),rgba(9,18,32,.8)); }
     .radar-model-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
     .radar-model-window { min-width:0; padding:10px 9px; border-radius:11px; background:rgba(8,13,27,.56); border:1px solid rgba(167,139,250,.13); }
@@ -189,8 +181,6 @@
     }
     @media (max-width:390px) {
       .radar-insight-card { padding:11px; border-radius:15px; }
-      .radar-nearest-grid { grid-template-columns:1fr 1fr; }
-      .radar-nearest-cell:last-child { grid-column:span 2; }
       .radar-model-grid { gap:5px; }
       .radar-model-window { padding:8px 7px; }
       .radar-model-window strong { font-size:12px; }
@@ -487,72 +477,7 @@
               </div>
             </div>
             <div class="radar-credit-line">Valós, múltbeli radarképek: <a href="https://www.rainviewer.com/" target="_blank" rel="noopener">Weather data by RainViewer</a> · Részletes utcai térképalap: Esri World Street Map. A többi térképréteg rögzített nagyítású, nem nagyítható/kicsinyíthető nézet (Windy-adatok; <a href="https://www.windy.com/47.77/21.86" target="_blank" rel="noopener">Windy.com</a>). A csúszka a tényleges, 10 percenkénti radarképkockák között finom áttűnéssel kever; a köztes állapot vizuális átmenet, nem új mérési adat.</div>
-            <section class="radar-insight-card" id="balkany-radar-insight" aria-live="polite">
-              <div class="radar-premium-head">
-                <div>
-                  <div class="radar-premium-kicker">BALKÁNY · HELYI CSAPADÉKFIGYELŐ</div>
-                  <div class="radar-premium-title">Radarhelyzet és rövid távú kilátás</div>
-                </div>
-                <div class="radar-live-status"><span class="radar-live-dot"></span><span>UTOLSÓ ELEMZÉS</span><strong id="radar-analysis-stamp">VÁRAKOZÁS</strong></div>
-              </div>
-
-              <div class="radar-status-strip is-detected" id="radar-status-strip">
-                <div class="radar-status-symbol" id="radar-status-symbol">◉</div>
-                <div>
-                  <div class="radar-insight-status" id="radar-insight-status">A radarképek betöltése folyamatban…</div>
-                  <div class="radar-insight-detail" id="radar-insight-detail">A Balkány körüli radarvisszhangokat elemezzük. A mozgásbecslés csak akkor jelenik meg, ha a képek alapján kiszámítható.</div>
-                </div>
-                <div class="radar-confidence-chip" id="radar-motion-confidence">ELEMZÉS FOLYAMATBAN</div>
-              </div>
-
-              <div class="radar-summary-grid">
-                <div class="radar-summary-card primary"><span class="radar-summary-label">Csapadéktömb távolsága</span><strong id="radar-insight-distance">--</strong><small>Radaros visszhangközéppont</small></div>
-                <div class="radar-summary-card"><span class="radar-summary-label">Becsült érkezés</span><strong id="radar-insight-eta">--</strong><small>Csak közeledő mozgásnál</small></div>
-                <div class="radar-summary-card"><span class="radar-summary-label">Órás modell-esély</span><strong id="radar-insight-pop">--</strong><small>Nem radaradat</small></div>
-                <div class="radar-summary-card"><span class="radar-summary-label">Következő ~60 perc</span><strong id="radar-insight-amount">--</strong><small id="radar-insight-amount-sub">A következő 60 perc modellösszege</small></div>
-              </div>
-
-              <div class="radar-nearest-panel" aria-live="polite">
-                <div class="radar-section-head">
-                  <div class="radar-section-title">📍 Legközelebbi észlelt csapadékpont</div>
-                  <div class="radar-section-subtitle">Pillanatnyi radar-képkocka</div>
-                </div>
-                <div class="radar-nearest-place-row">
-                  <div style="min-width:0;">
-                    <div class="radar-nearest-place-label">Legközelebbi térképi hely</div>
-                    <div class="radar-nearest-place-name" id="radar-nearest-place">Helynév azonosítása a koordináta alapján…</div>
-                  </div>
-                  <a class="radar-place-link" id="radar-place-link" href="https://www.openstreetmap.org/" target="_blank" rel="noopener">Térképen ↗</a>
-                </div>
-                <div class="radar-nearest-grid">
-                  <div class="radar-nearest-cell"><span>Balkánytól mért távolság</span><strong id="radar-nearest-distance">--</strong></div>
-                  <div class="radar-nearest-cell"><span>Radar-pixel koordinátája</span><strong id="radar-nearest-coords">--</strong></div>
-                  <div class="radar-nearest-cell"><span>Visszhang erőssége</span><strong id="radar-nearest-intensity">--</strong></div>
-                </div>
-                <div class="radar-nearest-note" id="radar-nearest-note">A koordináta a radar-pixel középpontja. A helynév a térképi adatbázis legközelebbi azonosított objektuma, nem házszám-pontos cím. A dBZ radar-visszaverődési érték, nem közvetlen mm/óra mérés.</div>
-              </div>
-
-              <div class="radar-model-panel">
-                <div class="radar-section-head">
-                  <div class="radar-section-title">☔ Modell-előrejelzés · Balkány</div>
-                  <div class="radar-section-subtitle">15 perces modell-lépték</div>
-                </div>
-                <div class="radar-model-grid">
-                  <div class="radar-model-window"><span>KÖVETKEZŐ 0–15 PERC</span><strong id="radar-model-0-15">--</strong><small id="radar-model-0-15-sub">Betöltés…</small></div>
-                  <div class="radar-model-window"><span>15–30 PERC</span><strong id="radar-model-15-30">--</strong><small id="radar-model-15-30-sub">Betöltés…</small></div>
-                  <div class="radar-model-window"><span>30–60 PERC</span><strong id="radar-model-30-60">--</strong><small id="radar-model-30-60-sub">Betöltés…</small></div>
-                </div>
-                <div class="radar-model-foot"><span id="radar-model-target">Ablak kezdete: most</span><span>Forrás: 15 perces modelladat</span></div>
-              </div>
-
-              <div class="radar-bottom-meta">
-                <span class="radar-meta-chip">Csapadéktípus: <strong id="radar-insight-type-chip">--</strong></span>
-                <span class="radar-meta-chip">Radaradat kora: <strong id="radar-insight-age">--</strong></span>
-                <span class="radar-meta-chip">Mozgás: <strong id="radar-insight-speed">--</strong></span>
-              </div>
-              <div class="radar-insight-foot" id="radar-insight-foot">A radarészlelés és a modell-előrejelzés külön adatforrás. A mozgásirány és az érkezési idő két képkocka összehasonlításán alapuló előzetes becslés, nem hivatalos riasztás.</div>
-            </section>
-          </div>
+                      </div>
         </div>
 
         <div class="card">
@@ -1609,13 +1534,11 @@
       try {
         await loadBalkanyRadarMetadata();
         setBalkanyRadarFrame(radarFrameIndex);
-        if (force || Date.now() - lastRadarAnalysisAt > 6 * 60 * 1000) await analyzeBalkanyRadarMovement(radarFrames);
+        // A helyi mozgás-/érkezés-összegző kártya eltávolítva; a radar-képkockák megjelenítése változatlan.
       } catch (err) {
         console.warn('Balkány RainViewer betöltés:', err);
         const wrap = document.getElementById('radar-frame-wrap');
         if (wrap && !radarMap) wrap.innerHTML = `<div style="height:100%;display:flex;align-items:center;justify-content:center;padding:18px;text-align:center;color:#94a3b8;font-size:11px;">A RainViewer radarkép jelenleg nem érhető el. Próbáld meg később frissíteni.</div>`;
-        updateBalkanyRadarNearest(null, null, 'A RainViewer nem adott elérhető radarképkockát.');
-        updateBalkanyRadarInsight(lastRadarTrack, null, 'A RainViewer nem adott elérhető radarképkockát.');
       }
     }
 
